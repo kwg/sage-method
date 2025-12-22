@@ -1,0 +1,124 @@
+# Status Transition Rules
+# Version: 1.0
+#
+# These rules define valid status values and transitions for stories and epics.
+
+version: "1.0"
+
+# Story status rules
+story:
+  statuses:
+    draft:
+      description: "Story is being written, not ready for review"
+      allowed_transitions:
+        - ready-for-review
+      color: "gray"
+
+    ready-for-review:
+      description: "Story is ready for PM/stakeholder review"
+      allowed_transitions:
+        - ready-for-dev
+        - draft  # Can be sent back for revisions
+      color: "yellow"
+
+    ready-for-dev:
+      description: "Story is approved and ready for implementation"
+      allowed_transitions:
+        - in-progress
+      color: "blue"
+
+    in-progress:
+      description: "Story is being actively implemented"
+      allowed_transitions:
+        - done
+        - blocked
+      color: "purple"
+
+    blocked:
+      description: "Story is waiting on external dependency"
+      allowed_transitions:
+        - in-progress
+      requires:
+        - blocker_description  # Must document what's blocking
+      color: "red"
+
+    done:
+      description: "Story is complete and merged"
+      allowed_transitions: []  # Terminal state
+      color: "green"
+
+  # Orchestrator-specific statuses (used during run-epic)
+  orchestrator_statuses:
+    queued:
+      description: "In story queue, not yet started"
+    planning:
+      description: "PLANNER subagent is decomposing"
+    implementing:
+      description: "IMPLEMENTER subagent is working"
+    testing:
+      description: "Running tests"
+    reviewing:
+      description: "REVIEWER subagent is reviewing"
+    merging:
+      description: "Merging to epic branch"
+
+# Epic status rules
+epic:
+  statuses:
+    draft:
+      description: "Epic is being defined"
+      allowed_transitions:
+        - planning
+      color: "gray"
+
+    planning:
+      description: "Stories are being written"
+      allowed_transitions:
+        - ready
+        - draft
+      color: "yellow"
+
+    ready:
+      description: "Epic is ready to begin implementation"
+      allowed_transitions:
+        - in-progress
+      color: "blue"
+
+    in-progress:
+      description: "Epic stories are being implemented"
+      allowed_transitions:
+        - validating
+        - blocked
+      color: "purple"
+
+    blocked:
+      description: "Epic is blocked by external dependency"
+      allowed_transitions:
+        - in-progress
+      color: "red"
+
+    validating:
+      description: "Epic is in Phase 4 validation"
+      allowed_transitions:
+        - done
+        - in-progress  # If validation fails
+      color: "orange"
+
+    done:
+      description: "Epic is complete and merged"
+      allowed_transitions: []  # Terminal state
+      color: "green"
+
+# Validation
+validation:
+  on_transition:
+    - check_transition_allowed()
+    - check_required_fields()
+    - update_timestamp()
+    - log_transition()
+
+  on_failure:
+    action: error
+    message: |
+      Cannot transition from '{{current_status}}' to '{{target_status}}'.
+      Allowed transitions: {{allowed_transitions}}

@@ -1,0 +1,5 @@
+task_id,name,path,description
+workflow,Workflow Engine,sage/core/tasks/workflow.xml,Core workflow execution engine
+advanced-elicitation,Advanced Elicitation,sage/core/tasks/advanced-elicitation.xml,Elicitation techniques
+validate-workflow,Validate Workflow,sage/core/tasks/validate-workflow.xml,Workflow validation
+index-docs,Index Docs,sage/core/tasks/index-docs.xml,Document indexing

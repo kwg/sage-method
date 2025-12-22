@@ -1,0 +1,230 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Game Epic Orchestrator State",
+  "description": "Persistent state for game epic execution - enables resumability, phase transitions, and learning integration",
+  "type": "object",
+  "required": ["phase", "epic_id", "epic_branch", "story_queue", "current_story_index"],
+  "properties": {
+    "phase": {
+      "type": "string",
+      "enum": [
+        "00-init",
+        "01-story-start",
+        "02-plan",
+        "03-implement-chunk",
+        "04-test",
+        "05-integration",
+        "06-review",
+        "07-story-complete",
+        "08-finalize",
+        "done"
+      ],
+      "description": "Current phase of execution"
+    },
+    "epic_id": {
+      "type": "string",
+      "description": "Epic identifier (e.g., '7')"
+    },
+    "epic_title": {
+      "type": "string",
+      "description": "Human-readable epic title"
+    },
+    "epic_branch": {
+      "type": "string",
+      "description": "Git branch for epic (e.g., 'epic-7')"
+    },
+    "epic_path": {
+      "type": "string",
+      "description": "Path to epic file"
+    },
+    "story_dir": {
+      "type": "string",
+      "description": "Directory containing story files"
+    },
+    "story_queue": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered list of story IDs to execute"
+    },
+    "skipped_stories": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Stories skipped (not ready-for-dev)"
+    },
+    "current_story_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Index into story_queue"
+    },
+    "current_story": {
+      "type": ["string", "null"],
+      "description": "Current story ID being processed"
+    },
+    "story_branch": {
+      "type": ["string", "null"],
+      "description": "Git branch for current story"
+    },
+    "story_path": {
+      "type": ["string", "null"],
+      "description": "Path to current story file"
+    },
+    "chunk_plan": {
+      "type": ["object", "null"],
+      "description": "PLANNER output - full chunk decomposition",
+      "properties": {
+        "story_summary": { "type": "string" },
+        "total_tasks": { "type": "integer" },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "tasks": { "type": "array", "items": { "type": "string" } },
+              "task_descriptions": { "type": "array", "items": { "type": "string" } },
+              "files_to_create": { "type": "array", "items": { "type": "string" } },
+              "files_to_modify": { "type": "array", "items": { "type": "string" } },
+              "files_to_read": { "type": "array", "items": { "type": "string" } },
+              "depends_on": { "type": "array", "items": { "type": "string" } },
+              "estimated_complexity": { "type": "string", "enum": ["small", "medium", "large"] }
+            }
+          }
+        },
+        "shared_patterns": { "type": "array", "items": { "type": "string" } },
+        "execution_order": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    },
+    "chunk_queue": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered chunk IDs from planner"
+    },
+    "current_chunk_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Index into chunk_queue"
+    },
+    "completed_chunks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Successfully completed chunk IDs"
+    },
+    "failed_chunks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Failed chunk IDs"
+    },
+    "chunk_retry_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Retry attempts for current chunk"
+    },
+    "test_attempt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Test fix attempts for current story"
+    },
+    "review_iteration": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Review iterations for current story"
+    },
+    "completed_stories": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Successfully completed story IDs"
+    },
+    "failed_stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "story_id": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      },
+      "description": "Failed stories with reasons"
+    },
+    "learning_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "record_id": { "type": "string" },
+          "type": { "type": "string", "enum": ["test", "review", "build", "implementation"] },
+          "context": { "type": "object" },
+          "resolution": { "type": ["object", "null"] },
+          "classification": { "type": ["object", "null"] }
+        }
+      },
+      "description": "Learning records for failure analysis (EPIC-002)"
+    },
+    "cascade_detection": {
+      "type": "object",
+      "properties": {
+        "failures_in_window": { "type": "integer" },
+        "last_failures": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cascade_detected": { "type": "boolean" }
+      },
+      "description": "Cascade failure tracking (EPIC-002)"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Workflow metrics for retrospective",
+      "properties": {
+        "workflow_version": { "type": "string", "default": "3.1-phased" },
+        "start_time": { "type": "string", "format": "date-time" },
+        "end_time": { "type": ["string", "null"], "format": "date-time" },
+        "stories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "story_id": { "type": "string" },
+              "chunks_planned": { "type": "integer" },
+              "chunks_completed": { "type": "integer" },
+              "chunks_failed": { "type": "integer" },
+              "chunks_skipped_dependency": { "type": "integer" },
+              "planner_duration_ms": { "type": "integer" },
+              "total_implementation_duration_ms": { "type": "integer" },
+              "test_attempts": { "type": "integer" },
+              "review_iterations": { "type": "integer" },
+              "tests_passed": { "type": ["boolean", "null"] },
+              "integration_tests_passed": { "type": ["boolean", "null"] },
+              "final_status": { "type": "string", "enum": ["completed", "failed", "skipped"] }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "total_stories": { "type": "integer" },
+            "completed_stories": { "type": "integer" },
+            "failed_stories": { "type": "integer" },
+            "skipped_stories": { "type": "integer" },
+            "total_chunks": { "type": "integer" },
+            "avg_chunk_duration_ms": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last state update"
+    },
+    "error": {
+      "type": ["string", "null"],
+      "description": "Last error message if any"
+    }
+  }
+}

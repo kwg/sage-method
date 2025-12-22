@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Update Pending Stories Task
+
+  Purpose: Inject newly discovered patterns into pending stories (drafted or ready-for-dev)
+
+  Usage: Invoked by story-done workflow when new patterns are discovered, or manually
+         when patterns need to be propagated to existing stories.
+
+  Input:
+    - new_pattern: The pattern to inject (ID, name, code example)
+    - sprint_status_path: Path to sprint-status.yaml
+    - story_dir: Directory containing story files
+    - patterns_registry: Path to patterns registry file
+
+  Output:
+    - List of updated story files
+    - Count of stories updated
+-->
+<task name="update-pending-stories" version="1.0">
+
+  <description>
+    Propagates newly discovered patterns to all pending stories (drafted or ready-for-dev).
+    Implements the "batch draft + update" workflow model where patterns discovered during
+    implementation are injected into remaining stories before they start development.
+  </description>
+
+  <inputs>
+    <input name="new_pattern_id" required="true" description="Pattern ID (e.g., P7)" />
+    <input name="new_pattern_name" required="true" description="Pattern name" />
+    <input name="new_pattern_code" required="true" description="Code example for pattern" />
+    <input name="source_story_key" required="true" description="Story where pattern was discovered" />
+    <input name="sprint_status_path" required="true" description="Path to sprint-status.yaml" />
+    <input name="story_dir" required="true" description="Directory containing story files" />
+  </inputs>
+
+  <steps>
+    <step n="1" goal="Find pending stories">
+      <action>Load {sprint_status_path} completely</action>
+      <action>Parse development_status section</action>
+      <action>Find all story keys where status is "drafted" or "ready-for-dev"</action>
+      <action>Exclude the source story ({source_story_key})</action>
+      <action>Store list as {pending_story_keys}</action>
+    </step>
+
+    <step n="2" goal="Update each pending story">
+      <action>For each story_key in {pending_story_keys}:</action>
+      <action>
+        1. Construct story path: {story_dir}/{story_key}.md
+        2. Load complete story file
+        3. Find "## Dev Notes" section
+        4. Look for "### Required Patterns" subsection
+           - If exists: append new pattern
+           - If not exists: create subsection and add pattern
+        5. Add pattern entry:
+           ```
+           **{new_pattern_id}: {new_pattern_name}**
+           [Pattern added post-draft from Story {source_story_key}]
+
+           ```gdscript
+           {new_pattern_code}
+           ```
+           ```
+        6. Save updated story file
+        7. Add to {updated_stories} list
+      </action>
+    </step>
+
+    <step n="3" goal="Report results">
+      <output>
+        **Pattern Propagation Complete**
+
+        Pattern: {new_pattern_id} - {new_pattern_name}
+        Source: Story {source_story_key}
+
+        Updated Stories ({updated_count}):
+        {updated_stories_list}
+      </output>
+    </step>
+  </steps>
+
+  <error-handling>
+    <on-error condition="story file not found">
+      <action>Log warning: "Story file not found: {story_path}"</action>
+      <action>Continue with next story</action>
+    </on-error>
+    <on-error condition="Dev Notes section not found">
+      <action>Log warning: "Dev Notes section not found in {story_key}"</action>
+      <action>Create Dev Notes section with Required Patterns subsection</action>
+    </on-error>
+  </error-handling>
+
+</task>

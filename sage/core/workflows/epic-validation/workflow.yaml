@@ -1,0 +1,69 @@
+# Epic Validation Workflow (Phase 4)
+# Version: 1.0
+#
+# This workflow runs after epic execution completes (Phase 3).
+# It provides a human checkpoint before merge and generates learning summaries.
+#
+# Triggers:
+# - Automatically after run-epic phase 08-finalize
+# - Manually via *validate-epic command
+
+name: "epic-validation"
+version: "1.0"
+description: "Phase 4 validation - human checkpoint, merge automation, learning summary"
+
+# Core components
+components:
+  - "sage/core/components/state-manager.md"
+  - "sage/core/components/metrics-collector.md"
+  - "sage/core/components/learning-recorder.md"
+
+# Entry point
+entry: "workflow.md"
+
+# Steps (sequential validation)
+steps:
+  - id: "01-review-summary"
+    file: "steps/step-01-review-summary.md"
+    description: "Generate and present epic summary for review"
+
+  - id: "02-human-checkpoint"
+    file: "steps/step-02-human-checkpoint.md"
+    description: "Require explicit human approval before merge"
+    blocks: true  # Workflow pauses until approval
+
+  - id: "03-merge-automation"
+    file: "steps/step-03-merge-automation.md"
+    description: "Merge epic branch to dev (or target branch)"
+
+  - id: "04-learning-summary"
+    file: "steps/step-04-learning-summary.md"
+    description: "Generate and persist learning summary"
+
+  - id: "05-cleanup"
+    file: "steps/step-05-cleanup.md"
+    description: "Branch cleanup and final status update"
+
+# Input requirements
+input:
+  required:
+    - epic_id: "Epic identifier"
+    - epic_branch: "Branch to validate"
+  optional:
+    - target_branch: "Branch to merge into (default: dev)"
+    - skip_cleanup: "Keep feature branches (default: false)"
+
+# Output artifacts
+output:
+  - "docs/sprint-artifacts/epic-{epic_id}-validation.md"
+  - "docs/sprint-artifacts/learning/epic-{epic_id}-learnings.md"
+
+# Changelog
+changelog:
+  - version: "1.0"
+    date: "2025-12-19"
+    changes:
+      - "Initial Phase 4 validation workflow"
+      - "Human checkpoint requirement"
+      - "Learning summary generation"
+      - "Branch cleanup automation"

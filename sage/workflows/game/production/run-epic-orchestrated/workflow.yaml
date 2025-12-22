@@ -1,0 +1,170 @@
+# Run Epic Orchestrated - Phased Execution Workflow (Game Module)
+# Version: 3.1
+#
+# This workflow executes an entire epic using phased execution with persistent state.
+# Each phase is a separate file, orchestrated by a thin loop that manages state.
+#
+# Game-specific features:
+# - Visual integration testing (Godot scenes)
+# - Optional integration phase for agent_tests
+# - Branch naming: {story_id} (no prefix)
+
+name: "run-epic-orchestrated"
+version: "3.1-phased"
+description: "Execute epic with phased architecture - bounded context, resumable, visible progress"
+
+# Core components integration (EPIC-002)
+components:
+  - "sage/core/components/state-manager.md"
+  - "sage/core/components/retry-handler.md"
+  - "sage/core/components/metrics-collector.md"
+  - "sage/core/components/learning-recorder.md"
+  - "sage/core/components/subagent-spawner.md"
+
+# Entry point - the orchestrator manages all phase transitions
+entry: "orchestrator.md"
+
+# State management (uses core state-manager)
+state:
+  schema: "state-schema.json"
+  location: "state/epic-{epic_id}-state.json"
+  persist: true  # Write state after each phase
+
+# Phase definitions (execution order managed by orchestrator)
+phases:
+  - id: "00-init"
+    file: "phases/00-init.md"
+    description: "Parse epic, build story queue, create epic branch"
+
+  - id: "01-story-start"
+    file: "phases/01-story-start.md"
+    description: "Load next story, create feature branch, update status"
+
+  - id: "02-plan"
+    file: "phases/02-plan.md"
+    description: "Spawn PLANNER subagent to decompose story into chunks"
+    subagent: true
+
+  - id: "03-implement-chunk"
+    file: "phases/03-implement-chunk.md"
+    description: "Spawn IMPLEMENTER subagent for one chunk, micro-commit"
+    subagent: true
+    loops: true  # This phase loops until all chunks done
+
+  - id: "04-test"
+    file: "phases/04-test.md"
+    description: "Run tests, spawn FIX subagent if failures"
+    subagent: true
+    retries: 3
+
+  - id: "05-integration"
+    file: "phases/05-integration.md"
+    description: "Spawn TESTER subagent for visual verification"
+    subagent: true
+    optional: true  # Skipped if no agent_tests defined
+
+  - id: "06-review"
+    file: "phases/06-review.md"
+    description: "Spawn REVIEWER subagent for adversarial code review"
+    subagent: true
+    retries: 3
+
+  - id: "07-story-complete"
+    file: "phases/07-story-complete.md"
+    description: "Update story status, merge to epic branch"
+
+  - id: "08-finalize"
+    file: "phases/08-finalize.md"
+    description: "Generate metrics, push branch, create PR"
+
+# Subagents used by phases (uses core subagent-spawner)
+subagents:
+  planner:
+    type: "general-purpose"
+    purpose: "Decompose story into implementable chunks"
+    phase: "02-plan"
+    context_limit: "4KB"
+
+  implementer:
+    type: "general-purpose"
+    purpose: "Implement one chunk with minimal context"
+    phase: "03-implement-chunk"
+    context_limit: "4KB"
+
+  fixer:
+    type: "general-purpose"
+    purpose: "Diagnose and fix test failures"
+    phase: "04-test"
+    context_limit: "4KB"
+
+  tester:
+    type: "general-purpose"
+    purpose: "Run visual integration tests (Godot)"
+    phase: "05-integration"
+    context_limit: "4KB"
+
+  reviewer:
+    type: "general-purpose"
+    purpose: "Adversarial code review"
+    phase: "06-review"
+    context_limit: "4KB"
+
+# Git branching strategy
+git:
+  epic_branch: "epic-{epic_id}"
+  story_branch: "{story_id}"
+  base: "dev"
+
+# Retry configuration (from core retry-handler)
+retry:
+  test: 3       # Test failures
+  review: 3     # Review iterations (game allows 3)
+  build: 1      # Build failures
+
+# Cascade detection (from core learning-recorder)
+cascade:
+  threshold: 3           # Failures in window
+  window: 5              # Stories
+  action: "pause_and_diagnose"
+
+# Metrics output (uses core metrics-collector)
+metrics:
+  output: "docs/sprint-artifacts/epic-{epic_id}-metrics.json"
+
+# Learning integration (uses core learning-recorder)
+learning:
+  output: "docs/sprint-artifacts/learning/"
+  aggregate_on_complete: true
+
+# Version history
+changelog:
+  - version: "3.1"
+    date: "2025-12-19"
+    changes:
+      - "EPIC-002: Core components integration"
+      - "Added learning-recorder for failure analysis"
+      - "Added cascade detection"
+      - "Standardized retry configuration"
+      - "Added context_limit to subagents"
+
+  - version: "3.0"
+    date: "2025-12-16"
+    changes:
+      - "Phased architecture - each phase is a separate file"
+      - "Persistent state enables resume from any point"
+      - "Bounded context per phase (~100 lines vs 1000)"
+      - "TodoWrite integration for visible progress"
+      - "State file for debugging and inspection"
+
+  - version: "2.2"
+    date: "2025-12-15"
+    changes:
+      - "Per-story integration tests"
+      - "FULL_QA extracted to separate workflow"
+
+  - version: "2.1"
+    date: "2025-12-15"
+    changes:
+      - "Dependency checking for chunks"
+      - "Metrics on failure"
+      - "FIX subagent for test failures"

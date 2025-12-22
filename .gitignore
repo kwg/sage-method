@@ -1,0 +1,23 @@
+# SAGE state (user-specific)
+.sage/state/
+
+# Project config (user creates from example)
+project-sage/config.yaml
+
+# IDE integrations (generated)
+.claude/
+.github/agents/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Logs
+*.log

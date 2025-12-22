@@ -1,0 +1,58 @@
+# Godot 4 Type Safety Patterns
+# JIT-loaded when project uses Godot 4 engine
+# Source: Epic 1 post-mortem - 25 files required fixes due to parse-time errors
+
+version: "1.0"
+applies_to: "Godot 4.x projects"
+
+# CRITICAL: Godot 4 parse-time type resolution
+# Autoloads are parsed BEFORE class_name registrations complete
+# Custom types are NOT available at autoload parse time
+
+autoload_constraints:
+  description: "Autoloads parse before class_name system scans files"
+
+  forbidden_in_autoloads:
+    typed_signals:
+      bad: "signal card_played(card: CardData, target: Node)"
+      good: "signal card_played(card: Resource, target: Node)"
+      reason: "CardData class_name not yet registered at parse time"
+
+    typed_arrays:
+      bad: "var deck: Array[CardData] = []"
+      good: "var deck: Array = []  # Array of CardData"
+      reason: "Custom class types unavailable for array typing"
+
+    extends_custom_class:
+      bad: "extends SaveProvider  # in runtime-loaded script"
+      good: "extends RefCounted  # Implements SaveProvider interface"
+      reason: "class_name not available when script loaded via load()"
+
+    conflicting_names:
+      bad: "# Autoload name: Logger (conflicts with Godot native)"
+      good: "# Autoload name: Log, GameLogger, AppLogger"
+      reason: "Godot has internal Logger class"
+
+safe_types_for_autoloads:
+  - { use: "Resource", instead_of: "CardData, EnemyData, custom resources" }
+  - { use: "Node", instead_of: "Custom node types" }
+  - { use: "Array", instead_of: "Array[CustomType]" }
+  - { use: "Dictionary", instead_of: "Typed dictionaries" }
+  - { use: "Variant", instead_of: "When type is truly unknown" }
+
+validation_command:
+  command: "godot --headless --quit 2>&1"
+  success: "Clean output with no SCRIPT ERROR or ERROR: lines"
+  catches:
+    - "Parse-time type resolution failures"
+    - "Missing class_name references"
+    - "Autoload initialization order issues"
+    - "Missing signal declarations"
+    - "Invalid extends clauses"
+
+code_review_checklist:
+  - "No custom class_name types in signal parameters (in autoloads)"
+  - "No typed arrays with custom classes Array[MyClass] (in autoloads)"
+  - "No extends on custom class_name in runtime-loaded scripts"
+  - "Autoload names don't conflict with Godot native classes"
+  - "godot --headless --quit passes without errors"

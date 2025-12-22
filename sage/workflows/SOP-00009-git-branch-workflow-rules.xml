@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SOP-00009 v1.0 | Git Branch Workflow | See SOP-00009-git-branch-workflow.md -->
+<git-branch-rules id="SOP-00009" version="1.0">
+
+  <!-- BRANCH NAMING CONVENTION -->
+  
+  <rule n="1" applies-to="naming" severity="critical">
+    <title>Feature Branch Naming Convention</title>
+    <mandate>Feature branches MUST follow pattern: {epic}-{story}-{slug}</mandate>
+    <description>
+      Consistent branch naming enables automatic story-to-branch mapping,
+      code review validation, and sprint tracking.
+    </description>
+    <pattern>{epic}-{story}-{slug}</pattern>
+    <components>
+      <component name="epic">Epic number (1-9)</component>
+      <component name="story">Story number within epic (1-99)</component>
+      <component name="slug">Kebab-case description (lowercase, hyphens only)</component>
+    </components>
+    <examples>
+      <correct>1-1-user-registration</correct>
+      <correct>1-5-test-runner-integration</correct>
+      <correct>2-3-api-authentication</correct>
+      <wrong>feature/user-login (wrong prefix)</wrong>
+      <wrong>1-1 (missing slug)</wrong>
+      <wrong>epic1-story1-login (wrong format)</wrong>
+    </examples>
+    <on-violation>HALT and request branch rename before proceeding</on-violation>
+  </rule>
+
+  <!-- PROTECTED BRANCHES -->
+  
+  <rule n="2" applies-to="branches" severity="critical">
+    <title>Protected Branch Policy</title>
+    <mandate>NEVER push directly to protected branches: main, dev</mandate>
+    <description>
+      Protected branches require Pull Request workflow. Direct commits
+      bypass review and CI/CD checks.
+    </description>
+    <protected-branches>
+      <branch name="main">Production branch - deploys to production</branch>
+      <branch name="dev">Development integration branch - base for features</branch>
+    </protected-branches>
+    <workflow>
+      <step n="1">Create feature branch from origin/dev</step>
+      <step n="2">Develop on feature branch</step>
+      <step n="3">Create Pull Request to dev</step>
+      <step n="4">After review, merge PR to dev</step>
+      <step n="5">Periodically merge dev → main for releases</step>
+    </workflow>
+    <on-violation>HALT - cannot push to protected branch</on-violation>
+  </rule>
+
+  <!-- CREATE-STORY WORKFLOW INTEGRATION -->
+  
+  <rule n="3" applies-to="create-story" severity="critical" context="workflow-only">
+    <title>Branch Creation During Story Creation</title>
+    <mandate>Feature branch MUST be created before story is marked ready-for-dev</mandate>
+    <description>
+      Create-story workflow must create the feature branch automatically
+      to ensure development work starts on the correct branch.
+    </description>
+    <workflow-steps>
+      <step n="1">Check if branch {story_key} already exists locally or remotely</step>
+      <step n="2">If exists: checkout existing branch</step>
+      <step n="3">If not exists: handle uncommitted changes (stash or halt)</step>
+      <step n="4">Create branch: git checkout -b {story_key} origin/dev</step>
+      <step n="5">Push to remote: git push -u origin {story_key}</step>
+      <step n="6">Record branch name in story file metadata</step>
+    </workflow-steps>
+    <on-violation>Cannot mark story ready-for-dev without feature branch</on-violation>
+  </rule>
+
+  <!-- DEV-STORY WORKFLOW INTEGRATION -->
+  
+  <rule n="4" applies-to="dev-story" severity="critical" context="workflow-only">
+    <title>Branch Verification Before Development</title>
+    <mandate>MUST verify correct feature branch BEFORE starting any development work</mandate>
+    <description>
+      Dev-story workflow Step 0 must verify the current branch matches
+      the story being developed. Prevents accidental work on wrong branch.
+    </description>
+    <verification-steps>
+      <step n="1">Extract story_key from story file path or metadata</step>
+      <step n="2">Get current branch: git branch --show-current</step>
+      <step n="3">Compare current branch with story_key</step>
+      <step n="4">If match: proceed to development</step>
+      <step n="5">If mismatch: offer to switch or halt</step>
+      <step n="6">If branch doesn't exist: halt with resolution steps</step>
+    </verification-steps>
+    <on-mismatch>
+      ⚠️ **Branch Mismatch**
+      Current branch: {current_branch}
+      Expected branch: {story_key}
+      
+      Switch to correct branch? [y/n]
+    </on-mismatch>
+    <on-missing>
+      🛑 **BRANCH NOT FOUND**
+      Expected feature branch {story_key} does not exist.
+      
+      Resolution:
+      1. Run create-story workflow, OR
+      2. Manually create: git checkout -b {story_key} origin/dev
+    </on-missing>
+    <on-violation>HALT - cannot proceed without correct branch</on-violation>
+  </rule>
+
+  <!-- CODE-REVIEW WORKFLOW INTEGRATION -->
+  
+  <rule n="5" applies-to="code-review" severity="critical" context="workflow-only">
+    <title>Branch Validation During Code Review</title>
+    <mandate>MUST validate reviewing correct branch for the story before proceeding</mandate>
+    <description>
+      Code review must verify the current branch matches the story being
+      reviewed. Prevents reviewing wrong code.
+    </description>
+    <validation-steps>
+      <step n="1">Extract story ID from story file</step>
+      <step n="2">Get current branch: git branch --show-current</step>
+      <step n="3">Extract story ID from branch name (pattern: {epic}-{story}-{slug})</step>
+      <step n="4">Compare branch story ID with story file story ID</step>
+      <step n="5">If match: proceed with review</step>
+      <step n="6">If mismatch: HALT with options</step>
+    </validation-steps>
+    <on-mismatch>
+      🚨 BRANCH MISMATCH DETECTED 🚨
+      
+      Story File: {story_id}
+      Current Branch: {current_branch}
+      Expected Branch Pattern: {story_id}-*
+      
+      Options:
+      1. Switch to correct branch for story {story_id}
+      2. Review different story matching current branch
+      3. Cancel review
+    </on-mismatch>
+    <on-violation>HALT - cannot review without branch validation</on-violation>
+  </rule>
+
+  <!-- UNCOMMITTED CHANGES HANDLING -->
+  
+  <rule n="6" applies-to="branch-operations" severity="high">
+    <title>Uncommitted Changes Handling</title>
+    <mandate>Check for uncommitted changes before any branch switch operation</mandate>
+    <description>
+      Uncommitted changes can be lost or cause conflicts during branch
+      operations. Always check and handle before switching.
+    </description>
+    <check-command>git status --porcelain</check-command>
+    <handling-options>
+      <option n="1">Stash changes: git stash push -m "description"</option>
+      <option n="2">Commit changes: git add . && git commit -m "message"</option>
+      <option n="3">Discard changes: git checkout -- . (with confirmation)</option>
+      <option n="4">HALT and let user decide</option>
+    </handling-options>
+    <on-violation>Ask user how to handle uncommitted changes</on-violation>
+  </rule>
+
+  <!-- SUBMODULE MANAGEMENT -->
+  
+  <rule n="7" applies-to="submodules" severity="critical">
+    <title>Submodule Commit and Push Workflow</title>
+    <mandate>When committing changes in a repository with submodules, MUST commit and push submodule changes first</mandate>
+    <description>
+      Projects using submodules (like sage/) require a two-step commit process:
+      1. Commit and push changes within the submodule to its remote
+      2. Commit the submodule reference update in the parent repository
+      
+      For projects using the sage submodule, changes should be pushed to a
+      branch matching the parent project name (e.g., sage-framework).
+    </description>
+    <workflow-steps>
+      <step n="1">Detect submodule changes: git status (shows "modified content" in submodule)</step>
+      <step n="2">Navigate to submodule: cd {submodule-path}</step>
+      <step n="3">Check submodule status: git status</step>
+      <step n="4">Stage submodule changes: git add {files}</step>
+      <step n="5">Commit in submodule: git commit -m "{message}"</step>
+      <step n="6">Determine target branch: Use parent project name or main</step>
+      <step n="7">Push submodule changes: git push origin {branch}</step>
+      <step n="8">Return to parent: cd ..</step>
+      <step n="9">Stage submodule reference: git add {submodule-path}</step>
+      <step n="10">Commit in parent: git commit -m "chore: update {submodule} submodule reference"</step>
+      <step n="11">Push parent changes: git push origin {parent-branch}</step>
+    </workflow-steps>
+    <branch-strategy>
+      <rule>For sage submodule: create/use branch named after parent project</rule>
+      <example>Parent: sage-framework → Submodule branch: sage-framework</example>
+      <example>Parent: my-app → Submodule branch: my-app</example>
+      <fallback>If project-specific branch doesn't exist, push to main</fallback>
+    </branch-strategy>
+    <verification>
+      <check>Submodule changes are committed locally</check>
+      <check>Submodule changes are pushed to remote</check>
+      <check>Parent repository submodule reference is updated</check>
+      <check>Parent repository changes are committed</check>
+    </verification>
+    <on-violation>HALT - cannot update parent without first pushing submodule changes</on-violation>
+  </rule>
+
+  <!-- ERROR TEMPLATES -->
+  
+  <error-templates>
+    <template id="branch-naming-violation">
+      <indicator>❌</indicator>
+      <title>Branch Naming Convention Violated</title>
+      <severity>CRITICAL</severity>
+      <rule-ref>SOP-00009-R1</rule-ref>
+      <pattern>Branch name does not match pattern: {branch}</pattern>
+      <expected>{epic}-{story}-{slug}</expected>
+      <action>Rename branch to follow convention</action>
+    </template>
+
+    <template id="protected-branch-violation">
+      <indicator>❌</indicator>
+      <title>Protected Branch Push Attempted</title>
+      <severity>CRITICAL</severity>
+      <rule-ref>SOP-00009-R2</rule-ref>
+      <pattern>Cannot push directly to protected branch: {branch}</pattern>
+      <action>Create feature branch and use Pull Request workflow</action>
+    </template>
+
+    <template id="branch-mismatch">
+      <indicator>⚠️</indicator>
+      <title>Branch Mismatch Detected</title>
+      <severity>HIGH</severity>
+      <rule-ref>SOP-00009-R4/R5</rule-ref>
+      <pattern>Current branch {current} does not match expected {expected}</pattern>
+      <options>
+        <option>Switch to correct branch</option>
+        <option>Work on different story</option>
+        <option>Cancel operation</option>
+      </options>
+    </template>
+
+    <template id="branch-not-found">
+      <indicator>🛑</indicator>
+      <title>Feature Branch Not Found</title>
+      <severity>CRITICAL</severity>
+      <rule-ref>SOP-00009-R4</rule-ref>
+      <pattern>Expected branch {story_key} does not exist</pattern>
+      <resolution>
+        1. Run create-story workflow, OR
+        2. Manually create: git checkout -b {story_key} origin/dev
+      </resolution>
+    </template>
+
+    <template id="uncommitted-changes">
+      <indicator>⚠️</indicator>
+      <title>Uncommitted Changes Detected</title>
+      <severity>HIGH</severity>
+      <rule-ref>SOP-00009-R6</rule-ref>
+      <pattern>Cannot switch branches with uncommitted changes</pattern>
+      <options>
+        <option>Stash changes</option>
+        <option>Commit changes</option>
+        <option>Discard changes (requires confirmation)</option>
+      </options>
+    </template>
+
+    <template id="submodule-unpushed">
+      <indicator>❌</indicator>
+      <title>Submodule Changes Not Pushed</title>
+      <severity>CRITICAL</severity>
+      <rule-ref>SOP-00009-R7</rule-ref>
+      <pattern>Submodule {submodule} has unpushed changes</pattern>
+      <action>Commit and push submodule changes before updating parent repository</action>
+      <workflow>
+        1. cd {submodule}
+        2. git add . && git commit -m "{message}"
+        3. git push origin {branch}
+        4. cd ..
+        5. git add {submodule} && git commit -m "chore: update {submodule} submodule"
+      </workflow>
+    </template>
+  </error-templates>
+
+  <version-history>
+    <entry version="1.0" date="2025-12-08">
+      <change>Initial release as XML rules file</change>
+      <change>Extracted from SOP-00009-git-branch-workflow.md</change>
+      <change>Added 6 enforceable rules for branch operations</change>
+      <change>Created error templates for all violation types</change>
+      <change>Workflow-specific rules marked with context="workflow-only"</change>
+    </entry>
+    <entry version="1.1" date="2025-12-09">
+      <change>Added Rule 7: Submodule Commit and Push Workflow</change>
+      <change>Added branch strategy for submodules (use parent project name)</change>
+      <change>Added error template for unpushed submodule changes</change>
+      <change>Documented two-step commit process for submodule repositories</change>
+    </entry>
+  </version-history>
+
+</git-branch-rules>

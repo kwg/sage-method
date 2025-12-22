@@ -1,0 +1,22 @@
+<advanced-elicitation version="stub">
+  <!-- SAGE Stub - Advanced Elicitation Task -->
+  
+  <status>Not Available in SAGE Standalone Mode</status>
+  
+  <description>
+    This is a placeholder for the advanced elicitation task system.
+    The full implementation exists in upstream SAGE.
+  </description>
+  
+  <usage>
+    If agents reference this file, they should display a message:
+    "Advanced elicitation not available in SAGE standalone mode"
+  </usage>
+  
+  <alternatives>
+    - Use basic elicitation in story creation workflows
+    - Implement SAGE-specific elicitation logic
+    - Integrate with upstream SAGE system
+  </alternatives>
+  
+</advanced-elicitation>

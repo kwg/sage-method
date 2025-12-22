@@ -1,0 +1,32 @@
+# SAGE Core Configuration - Framework Defaults
+# This file contains SAGE framework defaults only.
+# Project-specific values should be in: project-sage/config.yaml
+#
+# Loading hierarchy:
+#   1. This file (sage/core/config.yaml) - framework defaults
+#   2. project-sage/config.yaml - project overrides
+#   3. Project values override framework defaults
+
+# User Configuration (DEFAULTS - override in project-sage/config.yaml)
+user_name: "User"
+communication_language: "English"
+
+# Project Configuration (MUST be overridden in project-sage/config.yaml)
+# project_name: ""      # Set in project-sage/config.yaml
+# project_root: ""      # Set in project-sage/config.yaml
+output_folder: "docs"
+sprint_artifacts: "docs/sprint-artifacts"
+
+# Development Configuration (defaults)
+default_branch: "main"
+feature_branch_pattern: "{story-key}"
+
+# Agent Configuration
+agent_mode: "sage"
+
+# Workflow Configuration
+sage_folder: "sage"
+
+# Builder Configuration
+builder_creations_output_folder: "sage/agents"
+document_output_language: "English"

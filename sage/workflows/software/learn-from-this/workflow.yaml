@@ -1,0 +1,35 @@
+```yaml
+# Learn From This - Self-Improvement Workflow
+name: "learn-from-this"
+description: "Capture problems and solutions to modify agent files and SOPs to prevent repeated errors"
+author: "SAGE Method"
+
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+
+# Workflow components
+installed_path: "{project-root}/sage/workflows/software/learn-from-this"
+instructions: "{installed_path}/instructions.md"
+validation: "{installed_path}/checklist.md"
+checklist: "{installed_path}/checklist.md"
+
+# Agent and SOP paths
+agents_path: "{project-root}/sage/agents"
+sage_path: "{project-root}/sage"
+archive_path: "{sage_path}/archive"
+
+# Output for learning records
+learning_records: "{output_folder}/learning-records"
+default_output_file: "{learning_records}/learning-record-{date}.md"
+
+standalone: true
+
+# Trigger word for all agents
+trigger: "LearnFromThis"
+
+```

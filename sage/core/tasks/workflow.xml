@@ -1,0 +1,135 @@
+<workflow-engine version="1.0">
+  <!-- SAGE Workflow Engine Core -->
+  <!-- This engine processes workflow.yaml files and executes instructions.xml -->
+  
+  <critical>This is the core workflow execution engine for SAGE</critical>
+  <critical>All workflows reference this file for execution logic</critical>
+  
+  <protocols>
+    <!--
+      Protocol definitions are stored in external XML files for maintainability.
+      The workflow engine loads protocols from:
+        - sage/workflows/protocols/sprint-status-protocol.xml
+        - sage/workflows/protocols/git-branch-protocol.xml
+
+      Available protocols:
+
+      Sprint Status Protocols (sprint-status-protocol.xml):
+        - init_sprint_tracking: Check if sprint tracking is enabled
+        - find_ready_story: Find next ready-for-dev story from sprint-status.yaml
+        - update_story_status: Update story status in sprint-status.yaml
+        - resolve_story_path: Resolve story key to file path in nested folder structure
+        - determine_story_output_path: Determine output path for new story file
+
+      Git Branch Protocols (git-branch-protocol.xml):
+        - ensure_drafting_branch: Ensure on drafting branch for story creation
+        - ensure_implementation_branch: Ensure on implementation branch for development
+        - commit_story_draft: Commit story draft to drafting branch
+
+      Legacy inline protocols (kept for backward compatibility):
+    -->
+
+    <!-- Sprint tracking protocols (inline for backward compatibility) -->
+    <protocol name="init_sprint_tracking">
+      <action>Check if {sprint_artifacts}/sprint-status.yaml exists</action>
+      <action>If exists: set {{sprint_tracking}} = 'enabled'</action>
+      <action>If not exists: set {{sprint_tracking}} = 'disabled'</action>
+    </protocol>
+
+    <protocol name="find_ready_story">
+      <action>Read {sprint_artifacts}/sprint-status.yaml</action>
+      <action>Find stories with status: 'ready-for-dev' or 'in-progress'</action>
+      <action>Prioritize 'in-progress' over 'ready-for-dev'</action>
+      <action>Return {{story_path}} and {{story_key}}</action>
+    </protocol>
+
+    <protocol name="update_story_status">
+      <action>Requires: {{story_key}} and {{new_status}}</action>
+      <action>Read {sprint_artifacts}/sprint-status.yaml</action>
+      <action>Find story with key {{story_key}}</action>
+      <action>Update story status to {{new_status}}</action>
+      <action>Save sprint-status.yaml</action>
+    </protocol>
+
+    <protocol name="discover_inputs">
+      <action>Read workflow.yaml from {{workflow_path}}</action>
+      <action>Extract all variables marked with config_source pattern</action>
+      <action>Load config from {config_source}</action>
+      <action>Substitute all {config_source}:key references</action>
+      <action>Resolve all {project-root} references</action>
+    </protocol>
+
+    <!-- Story path resolution (nested folder structure) -->
+    <protocol name="resolve_story_path">
+      <action>See: sage/workflows/protocols/sprint-status-protocol.xml</action>
+      <action>Parse {{story_key}} to extract epic_num and story_num</action>
+      <action>Search: {sprint_artifacts}/epic-{{epic_num}}/sprint-*/{{story_key}}.md</action>
+      <action>Set {{story_path}} and {{story_found}}</action>
+    </protocol>
+
+    <protocol name="determine_story_output_path">
+      <action>See: sage/workflows/protocols/sprint-status-protocol.xml</action>
+      <action>Parse {{story_key}} to extract epic_num</action>
+      <action>Set {{story_output_path}} = {sprint_artifacts}/epic-{{epic_num}}/sprint-{{sprint_num}}/{{story_key}}.md</action>
+    </protocol>
+
+    <!-- Git branch protocols -->
+    <protocol name="ensure_drafting_branch">
+      <action>See: sage/workflows/protocols/git-branch-protocol.xml</action>
+      <action>Branch pattern: {{epic_num}}-0-story-creation</action>
+      <action>Creates/switches to drafting branch for story creation</action>
+      <action>Sets {{drafting_branch}} and {{branch_ready}}</action>
+    </protocol>
+
+    <protocol name="ensure_implementation_branch">
+      <action>See: sage/workflows/protocols/git-branch-protocol.xml</action>
+      <action>Branch pattern: {{story_key}}</action>
+      <action>Creates/switches to implementation branch for development</action>
+      <action>Sets {{implementation_branch}} and {{branch_ready}}</action>
+    </protocol>
+
+    <protocol name="commit_story_draft">
+      <action>See: sage/workflows/protocols/git-branch-protocol.xml</action>
+      <action>Commits story file and sprint-status.yaml to drafting branch</action>
+    </protocol>
+  </protocols>
+  
+  <variable-substitution>
+    <!-- Variable resolution patterns -->
+    <pattern name="project-root">
+      <resolve>{project-root} → value from config.yaml project_root field</resolve>
+    </pattern>
+    
+    <pattern name="config-reference">
+      <resolve>{config_source}:key → load config file, extract key value</resolve>
+      <example>{config_source}:user_name → reads user_name from config</example>
+    </pattern>
+    
+    <pattern name="story-key">
+      <resolve>{story-key} → extracted from story filename (e.g., "1-1-sage-remediation")</resolve>
+    </pattern>
+    
+    <pattern name="date">
+      <resolve>{date} → system-generated current date (YYYY-MM-DD)</resolve>
+    </pattern>
+  </variable-substitution>
+  
+  <execution-flow>
+    <step n="1">Load workflow.yaml configuration</step>
+    <step n="2">Resolve all variable references using substitution patterns</step>
+    <step n="3">Load instructions.xml from {installed_path}</step>
+    <step n="4">Execute instructions sequentially, respecting control flow</step>
+    <step n="5">Handle HALT conditions and user input requests</step>
+    <step n="6">Save outputs to {output_folder} as specified</step>
+  </execution-flow>
+  
+  <control-structures>
+    <check>Conditional execution - proceed only if condition met</check>
+    <goto>Jump to named anchor or step</goto>
+    <invoke-protocol>Call reusable protocol by name</invoke-protocol>
+    <action>Execute single atomic operation</action>
+    <output>Display formatted message to user</output>
+    <ask>Request user input, pause execution</ask>
+  </control-structures>
+  
+</workflow-engine>

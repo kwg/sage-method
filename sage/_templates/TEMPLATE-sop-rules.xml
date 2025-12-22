@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SOP-{XXXXX} v1.0 | {Title} Rules | Machine-Enforceable -->
+<sop-rules id="SOP-{XXXXX}" version="1.0">
+
+  <metadata>
+    <name>{Title}</name>
+    <version>1.0</version>
+    <last_updated>{date}</last_updated>
+    <category>{category}</category>
+    <load_strategy>{lazy-on-workflow|always|lazy-on-error}</load_strategy>
+    <applies_to>{all-agents|developer|tech-writer|etc}</applies_to>
+  </metadata>
+
+  <purpose>
+    {Brief description of what this SOP accomplishes}
+  </purpose>
+
+  <!-- RULES: Machine-enforceable requirements -->
+  
+  <rules>
+    <rule id="R1" severity="critical" trigger="{when this applies}">
+      <description>{What must happen}</description>
+      <validation>{How to verify compliance}</validation>
+      <example>
+        <correct>{Good example}</correct>
+        <incorrect>{Bad example}</incorrect>
+      </example>
+    </rule>
+
+    <rule id="R2" severity="major" trigger="{when this applies}">
+      <description>{What must happen}</description>
+      <validation>{How to verify compliance}</validation>
+    </rule>
+
+    <rule id="R3" severity="minor" trigger="{when this applies}">
+      <description>{What must happen}</description>
+      <validation>{How to verify compliance}</validation>
+    </rule>
+  </rules>
+
+  <!-- WORKFLOW: Step-by-step execution -->
+
+  <workflow>
+    <step n="1" name="{Step Name}">
+      <action>{What to do}</action>
+      <input>{Required input}</input>
+      <output>{Expected output}</output>
+      <validation>{How to verify}</validation>
+    </step>
+
+    <step n="2" name="{Step Name}">
+      <action>{What to do}</action>
+      <rules-applied>R1, R2</rules-applied>
+    </step>
+
+    <step n="3" name="{Step Name}">
+      <action>{What to do}</action>
+      <condition if="{condition}">{alternative action}</condition>
+    </step>
+  </workflow>
+
+  <!-- ERROR HANDLING -->
+
+  <error-handling>
+    <error code="E1" type="{error type}">
+      <description>{Error description}</description>
+      <resolution>{How to resolve}</resolution>
+    </error>
+
+    <error code="E2" type="{error type}">
+      <description>{Error description}</description>
+      <resolution>{How to resolve}</resolution>
+    </error>
+  </error-handling>
+
+  <!-- INTEGRATION -->
+
+  <integration>
+    <triggers-loading>
+      <trigger event="{event name}" loads="full-rules"/>
+    </triggers-loading>
+    
+    <related-sops>
+      <sop id="SOP-{XXXXX}" relationship="{depends-on|extends|related}"/>
+    </related-sops>
+  </integration>
+
+</sop-rules>

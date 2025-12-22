@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SOP-00009-STUB | Trigger: workflow start -->
+<git-stub id="SOP-00009-STUB" version="1.0">
+  
+  <metadata>
+    <name>Git Branching</name>
+    <trigger>dev-story, create-story, code-review workflows</trigger>
+    <full-rules>sage/workflows/SOP-00009-git-branch-workflow-rules.xml</full-rules>
+  </metadata>
+
+  <critical-rules>
+    <rule id="branch-pattern">{epic}-{story}-{slug} from origin/dev</rule>
+    <rule id="base-branch">Always branch from origin/dev</rule>
+    <rule id="commit-format">[{STORY-ID}] {type}: {description}</rule>
+    <rule id="no-direct-main">Never commit directly to main or dev</rule>
+    <rule id="submodule-first">Commit and push submodule changes before parent</rule>
+  </critical-rules>
+
+  <commit-types>feat, fix, docs, refactor, test, chore</commit-types>
+
+  <workflow-trigger>
+    <dev-story>Verify branch before implementation</dev-story>
+    <create-story>Create branch after story creation</create-story>
+    <code-review>Use origin/dev as base</code-review>
+  </workflow-trigger>
+
+  <on-violation>⚠️ Load full SOP-00009 for branch validation and merge strategy</on-violation>
+
+</git-stub>

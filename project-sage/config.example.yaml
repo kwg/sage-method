@@ -1,0 +1,22 @@
+# Project SAGE Configuration
+# Copy this to config.yaml and customize for your project
+#
+# This file contains project-specific settings that override sage/core/config.yaml
+
+# User Configuration
+user_name: "Your Name"
+communication_language: "English"
+
+# Project Configuration
+project_name: "your-project"
+project_root: "/path/to/your/project"
+output_folder: "docs"
+sprint_artifacts: "docs/sprint-artifacts"
+
+# Development Configuration
+default_branch: "main"
+feature_branch_pattern: "{story-key}"
+
+# Builder Configuration
+builder_creations_output_folder: "sage/agents"
+document_output_language: "English"

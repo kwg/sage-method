@@ -1,0 +1,19 @@
+# Agent Manifest
+
+**Status**: Not Available in SAGE Standalone Mode
+
+This CSV would list all available agents for retrospective workflows.
+
+## Structure
+
+In a full implementation:
+```csv
+agent_id,name,role,icon
+sm,Scrum Master,Facilitator,📊
+dev,Developer,Implementation,💻
+...
+```
+
+## SAGE Alternative
+
+Agent information is in individual files in `sage/agents/` directory.

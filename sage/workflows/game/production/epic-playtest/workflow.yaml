@@ -1,0 +1,55 @@
+# Epic Playtest Workflow
+name: "epic-playtest"
+description: "Run structured playtesting session for a completed epic to verify acceptance criteria, find bugs, and gather gameplay feedback"
+author: "SAGE"
+
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+sprint_artifacts: "{config_source}:sprint_artifacts"
+
+installed_path: "{project-root}/sage/workflows/game/production/epic-playtest"
+template: false
+instructions: "{installed_path}/instructions.md"
+
+# Required inputs
+required_inputs:
+  - agent_manifest: "{project-root}/sage/data/agent-manifest.csv"
+
+# Input file patterns - selective loading for the epic being tested
+input_file_patterns:
+  epics:
+    description: "Epic with user stories and acceptance criteria"
+    whole: "{output_folder}/*epic*.md"
+    sharded_index: "{output_folder}/*epic*/index.md"
+    sharded_single: "{output_folder}/*epic*/epic-{{epic_num}}.md"
+    load_strategy: "SELECTIVE_LOAD"
+  gdd:
+    description: "Game Design Document for context"
+    whole: "{output_folder}/*gdd*.md"
+    sharded: "{output_folder}/*gdd*/*.md"
+    load_strategy: "FULL_LOAD"
+
+# Required files
+sprint_status_file: "{sprint_artifacts}/sprint-status.yaml || {output_folder}/sprint-status.yaml"
+story_directory: "{sprint_artifacts}"
+
+# Templates for playtesting
+templates:
+  playtest_checklist: "{installed_path}/templates/playtest-checklist.md"
+  bug_report: "{installed_path}/templates/bug-report-template.md"
+  gameplay_feedback: "{installed_path}/templates/gameplay-feedback.md"
+
+# Documentation
+playtester_handbook: "{installed_path}/docs/playtester-handbook.md"
+
+# Output configuration
+default_output_file: "{sprint_artifacts}/epic-{{epic_num}}-playtest-{date}.md"
+bugs_folder: "{sprint_artifacts}/bugs"
+
+standalone: true
+web_bundle: false

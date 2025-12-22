@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sprint Status Protocols
+
+  Reusable protocols for sprint-status.yaml operations.
+  Register in sage/core/tasks/workflow.xml under <protocols> section.
+
+  Used by: dev-story, code-review, create-story, retrospective, sprint-status
+
+  Usage in workflow instructions:
+    <invoke-protocol name="init_sprint_tracking" />
+    <invoke-protocol name="update_story_status" />
+    <invoke-protocol name="resolve_story_path" />
+
+  Requires workflow.yaml to define:
+    sprint_status: "{sprint_artifacts}/sprint-status.yaml"
+    sprint_artifacts: path to sprint-artifacts folder
+
+  Folder Structure:
+    sprint-artifacts/epic-{m}/sprint-{x}/{epic}-{story}-{slug}.md
+    Example: sprint-artifacts/epic-3/sprint-1/3-3-state-recovery-via-log-replay.md
+-->
+
+<!--
+  Protocol: init_sprint_tracking
+  
+  Checks if sprint-status.yaml exists and sets tracking mode.
+  Call at workflow start before any sprint-status operations.
+  
+  Sets:
+    {{sprint_tracking}} = "enabled" | "disabled"
+-->
+<protocol name="init_sprint_tracking" desc="Initialize sprint tracking mode">
+  <check if="{{sprint_status}} file exists">
+    <action>Set {{sprint_tracking}} = "enabled"</action>
+  </check>
+  <check if="{{sprint_status}} file does NOT exist">
+    <action>Set {{sprint_tracking}} = "disabled"</action>
+    <output>ℹ️ Sprint tracking disabled (no sprint-status.yaml)</output>
+  </check>
+</protocol>
+
+<!--
+  Protocol: update_story_status
+  
+  Updates a story's status in sprint-status.yaml.
+  Requires: {{story_key}}, {{new_status}}, {{sprint_tracking}} == "enabled"
+  
+  Handles: Key not found, file preservation
+-->
+<protocol name="update_story_status" desc="Update story status in sprint-status.yaml">
+  <check if="{{sprint_tracking}} != 'enabled'">
+    <return />
+  </check>
+  <action>Load FULL file: {{sprint_status}}</action>
+  <action>Find development_status[{{story_key}}]</action>
+  <check if="key found">
+    <action>Update development_status[{{story_key}}] = {{new_status}}</action>
+    <action>Save file, preserving comments and structure</action>
+    <output>✅ {{story_key}} → {{new_status}}</output>
+  </check>
+  <check if="key not found">
+    <output>⚠️ {{story_key}} not in sprint-status.yaml</output>
+  </check>
+</protocol>
+
+<!--
+  Protocol: find_ready_story
+  
+  Finds first ready-for-dev story from sprint-status.yaml.
+  Requires: {{sprint_tracking}} == "enabled"
+  
+  Sets:
+    {{next_story_key}} = story key or empty
+    {{story_found}} = true | false
+-->
+<protocol name="find_ready_story" desc="Find next ready-for-dev story">
+  <check if="{{sprint_tracking}} != 'enabled'">
+    <action>Set {{story_found}} = false</action>
+    <return />
+  </check>
+  <action>Load FULL file: {{sprint_status}}</action>
+  <action>Iterate development_status top-to-bottom</action>
+  <action>Find FIRST entry where:
+    - Key pattern: number-number-name (story key)
+    - NOT epic-X or retrospective
+    - Status == "ready-for-dev"
+  </action>
+  <check if="found">
+    <action>Set {{next_story_key}} = matched key</action>
+    <action>Set {{story_found}} = true</action>
+  </check>
+  <check if="not found">
+    <action>Set {{next_story_key}} = empty</action>
+    <action>Set {{story_found}} = false</action>
+  </check>
+</protocol>
+
+<!--
+  Protocol: resolve_story_path
+
+  Resolves a story key to its actual file path in the nested folder structure.
+  Searches: sprint-artifacts/epic-{m}/sprint-*/{{story_key}}.md
+
+  Requires:
+    {{story_key}} - The story key (e.g., "3-3-state-recovery-via-log-replay")
+    {{sprint_artifacts}} - Base path to sprint-artifacts folder
+
+  Sets:
+    {{story_path}} - Full path to story file, or empty if not found
+    {{story_found}} - true if file exists, false otherwise
+    {{epic_num}} - Extracted epic number from story_key
+    {{story_num}} - Extracted story number from story_key
+    {{sprint_folder}} - The sprint folder containing the story
+-->
+<protocol name="resolve_story_path" desc="Resolve story key to file path in nested folder structure">
+  <!-- Extract epic and story numbers from story_key -->
+  <action>Parse {{story_key}} format: {epic}-{story}-{slug}</action>
+  <action>Extract {{epic_num}} = first number (e.g., "3" from "3-3-state-recovery")</action>
+  <action>Extract {{story_num}} = second number (e.g., "3" from "3-3-state-recovery")</action>
+
+  <!-- Search for story file in epic folder -->
+  <action>Search pattern: {{sprint_artifacts}}/epic-{{epic_num}}/sprint-*/{{story_key}}.md</action>
+  <action>Use glob to find matching files</action>
+
+  <check if="exactly one match found">
+    <action>Set {{story_path}} = matched file path</action>
+    <action>Extract {{sprint_folder}} from path (e.g., "sprint-3")</action>
+    <action>Set {{story_found}} = true</action>
+    <output>📂 Found story: {{story_path}}</output>
+  </check>
+
+  <check if="multiple matches found">
+    <output>⚠️ Multiple story files found for {{story_key}}:</output>
+    <action>List all matches</action>
+    <ask>Which file should be used? Enter number or full path:</ask>
+    <action>Set {{story_path}} = user selection</action>
+    <action>Set {{story_found}} = true</action>
+  </check>
+
+  <check if="no matches found">
+    <action>Set {{story_path}} = empty</action>
+    <action>Set {{story_found}} = false</action>
+    <output>❌ Story file not found: {{story_key}}</output>
+    <output>   Searched: {{sprint_artifacts}}/epic-{{epic_num}}/sprint-*/{{story_key}}.md</output>
+  </check>
+</protocol>
+
+<!--
+  Protocol: determine_story_output_path
+
+  Determines the output path for a new story file.
+  Uses folder structure: sprint-artifacts/epic-{m}/sprint-{x}/{story_key}.md
+
+  Requires:
+    {{story_key}} - The story key (e.g., "3-3-state-recovery-via-log-replay")
+    {{sprint_artifacts}} - Base path to sprint-artifacts folder
+    {{sprint_num}} - Sprint number (optional, defaults to epic_num if not specified)
+
+  Sets:
+    {{story_output_path}} - Full path for the new story file
+    {{story_folder}} - The folder that will contain the story
+-->
+<protocol name="determine_story_output_path" desc="Determine output path for new story file">
+  <!-- Extract epic number from story_key -->
+  <action>Parse {{story_key}} format: {epic}-{story}-{slug}</action>
+  <action>Extract {{epic_num}} = first number</action>
+
+  <!-- Determine sprint number -->
+  <check if="{{sprint_num}} is NOT provided or empty">
+    <action>Set {{sprint_num}} = {{epic_num}}</action>
+    <note>Default: sprint number matches epic number (can be overridden)</note>
+  </check>
+
+  <!-- Construct folder path -->
+  <action>Set {{story_folder}} = {{sprint_artifacts}}/epic-{{epic_num}}/sprint-{{sprint_num}}</action>
+
+  <!-- Ensure folder exists -->
+  <action>Create folder if not exists: mkdir -p {{story_folder}}</action>
+
+  <!-- Set output path -->
+  <action>Set {{story_output_path}} = {{story_folder}}/{{story_key}}.md</action>
+  <output>📂 Story will be created at: {{story_output_path}}</output>
+</protocol>

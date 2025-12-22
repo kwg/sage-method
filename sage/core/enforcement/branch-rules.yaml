@@ -1,0 +1,82 @@
+# Branch Naming Rules
+# Version: 1.0
+#
+# These rules are enforced at branch creation time.
+# Violations result in errors, not warnings.
+
+version: "1.0"
+
+rules:
+  # Epic branches
+  epic_branch:
+    pattern: "^epic-[a-z0-9-]+$"
+    description: "Epic branches must be: epic-{id}"
+    examples:
+      valid:
+        - "epic-001"
+        - "epic-authentication"
+        - "epic-user-management"
+      invalid:
+        - "Epic-001"      # Case sensitive
+        - "feature/epic"  # Wrong prefix
+        - "epic_001"      # Underscore not allowed
+
+  # Software module story branches
+  software_story_branch:
+    pattern: "^feature/[a-z0-9-]+$"
+    description: "Software story branches must be: feature/{id}"
+    module: software
+    examples:
+      valid:
+        - "feature/001-1"
+        - "feature/user-auth"
+        - "feature/api-v2"
+      invalid:
+        - "001-1"           # Missing prefix
+        - "story/001-1"     # Wrong prefix
+        - "Feature/001-1"   # Case sensitive
+
+  # Game module story branches
+  game_story_branch:
+    pattern: "^[a-z0-9-]+$"
+    description: "Game story branches must be: {id} (no prefix)"
+    module: game
+    exclude_patterns:
+      - "^epic-"    # Not an epic branch
+      - "^main$"    # Protected
+      - "^dev$"     # Protected
+    examples:
+      valid:
+        - "ms-1-1"
+        - "combat-system"
+        - "ui-redesign"
+      invalid:
+        - "feature/ms-1"  # No prefix needed
+        - "MS-1"          # Case sensitive
+
+  # Protected branches
+  protected:
+    branches:
+      - "main"
+      - "master"
+      - "dev"
+      - "develop"
+    rules:
+      - no_direct_push: true
+      - require_pr: true
+      - require_review: true
+
+# Validation function (pseudo-code)
+validation:
+  on_create:
+    - detect_module()  # software or game
+    - apply_module_rules()
+    - check_protected()
+    - return_result()
+
+  on_failure:
+    action: error
+    message: |
+      Branch name '{{branch}}' does not match required pattern.
+      Expected: {{expected_pattern}}
+      Examples: {{examples}}

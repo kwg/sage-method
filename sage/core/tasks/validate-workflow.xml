@@ -1,0 +1,15 @@
+<validate-workflow version="stub">
+  <!-- SAGE Stub - Workflow Validation Framework -->
+  
+  <status>Not Available in SAGE Standalone Mode</status>
+  
+  <description>
+    This is a placeholder for the workflow validation framework.
+    The full implementation exists in upstream SAGE.
+  </description>
+  
+  <usage>
+    If workflows reference this file, they should skip validation or use basic checks.
+  </usage>
+  
+</validate-workflow>

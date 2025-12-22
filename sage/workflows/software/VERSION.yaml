@@ -1,0 +1,118 @@
+# SAGE Workflow Version Tracking
+# ================================
+# Tracks which SAGE version our local workflows were copied from
+# and their customization status.
+#
+# Run `*workflow-sync` (SOP-00013) after SAGE updates to check for
+# upstream improvements worth merging.
+
+upstream_source_version: "6.0.0-alpha.15"
+initial_copy_date: "2025-12-09"
+last_sync_check: "2025-12-09"
+
+# Workflow status legend:
+#   vanilla    - Exact copy of SAGE, no local changes
+#   customized - Local modifications made (requires manual merge)
+#   deprecated - SAGE removed this, we're keeping for now
+
+workflows:
+  # Implementation workflows
+  implementation/dev-story:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    notes: "Core dev workflow - watch for SAGE improvements"
+    
+  implementation/code-review:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    notes: "May customize for project-specific review standards"
+    
+  implementation/sprint-planning:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  implementation/create-story:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    notes: "May customize story template format"
+    
+  implementation/retrospective:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  implementation/correct-course:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  implementation/sprint-status:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+
+  # Diagram workflows
+  diagrams/create-diagram:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  diagrams/create-dataflow:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  diagrams/create-flowchart:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  diagrams/create-wireframe:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+
+  # Test architecture workflows
+  testarch/framework:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    notes: "May customize for Python/pytest focus"
+    
+  testarch/atdd:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/automate:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/test-design:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/trace:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/nfr-assess:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/ci:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  testarch/test-review:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+
+  # Quick flow workflows
+  quick-flow/create-tech-spec:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  quick-flow/quick-dev:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+
+  # Utility workflows
+  document-project:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"
+    
+  workflow-status:
+    status: vanilla
+    last_upstream_sync: "6.0.0-alpha.15"

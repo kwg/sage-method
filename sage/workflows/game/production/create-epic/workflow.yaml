@@ -1,0 +1,147 @@
+# Create Epic - Automated Epic Setup with Retro Integration
+name: create-epic
+description: "Orchestrate complete epic setup: review retros, analyze dependencies, create all stories with full context injection, generate story contexts, and produce epic kickoff summary"
+author: "SAGE Framework"
+version: "1.0"
+
+# Critical variables from config
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+sprint_artifacts: "{config_source}:sprint_artifacts"
+
+# Workflow components
+installed_path: "{project-root}/sage/workflows/game/production/create-epic"
+instructions: "{installed_path}/instructions.md"
+briefing_template: "{installed_path}/epic-briefing-template.md"
+
+# Core workflow references (for subagent spawning)
+create_story_workflow: "{project-root}/sage/workflows/game/production/create-story/workflow.yaml"
+story_context_workflow: "{project-root}/sage/workflows/game/production/story-context/workflow.yaml"
+
+# Input variables
+variables:
+  # Target epic (required - will be elicited if not provided)
+  epic_identifier: "" # e.g., "8", "mini-sprint-uiux", "epic-8"
+
+  # Sprint tracking
+  sprint_status_file: "{sprint_artifacts}/sprint-status.yaml"
+
+  # Retrospective sources (glob pattern for all retros)
+  retrospectives_pattern: "{sprint_artifacts}/epic-*-retro-*.md"
+
+  # Epic definition sources
+  epics_file: "{output_folder}/epics.md"
+  gdd_file: "{output_folder}/GDD.md"
+
+  # Architecture and tech context
+  architecture_file: "{output_folder}/architecture.md"
+  tech_spec_pattern: "{output_folder}/tech-spec-*.md"
+  patterns_dir: "{output_folder}/patterns"
+
+  # Output locations
+  briefing_output: "{sprint_artifacts}/{{epic_key}}-briefing.md"
+
+# Smart input file references
+input_file_patterns:
+  retrospectives:
+    description: "All previous retrospectives for learning extraction"
+    pattern: "{sprint_artifacts}/epic-*-retro-*.md"
+    load_strategy: "FULL_LOAD"
+
+  patterns_registry:
+    description: "Technical patterns for injection"
+    whole: "{output_folder}/patterns/*.md"
+    load_strategy: "FULL_LOAD"
+
+  architecture:
+    description: "System architecture"
+    whole: "{output_folder}/*architecture*.md"
+    load_strategy: "FULL_LOAD"
+
+  gdd:
+    description: "Game design document with epic definitions"
+    whole: "{output_folder}/GDD.md"
+    load_strategy: "FULL_LOAD"
+
+  epics:
+    description: "Epic breakdown document"
+    whole: "{output_folder}/*epic*.md"
+    load_strategy: "SELECTIVE_LOAD"
+
+# Workflow outputs
+outputs:
+  epic_briefing: "{briefing_output}"
+  dependency_analysis: "{sprint_artifacts}/{{epic_key}}-dependencies.yaml"
+  kickoff_summary: "{sprint_artifacts}/{{epic_key}}-kickoff.md"
+
+# Workflow phases (for documentation - actual logic in instructions.md)
+phases:
+  phase_1:
+    name: "Retrospective Review & Epic Validation"
+    description: "Load all retros, extract learnings, validate epic stories against patterns"
+    outputs:
+      - epic_briefing_document
+      - applicable_patterns_list
+      - action_items_to_address
+
+  phase_2:
+    name: "Dependency Analysis"
+    description: "Analyze story dependencies, determine parallel vs sequential execution"
+    outputs:
+      - execution_batches
+      - dependency_graph
+      - batch_rationale
+
+  phase_3:
+    name: "Story Draft Creation"
+    description: "Spawn subagents to create story drafts in batch order"
+    outputs:
+      - story_files_created
+      - creation_status_per_story
+
+  phase_4:
+    name: "Story Context Generation"
+    description: "Spawn subagents to generate story contexts in batch order"
+    outputs:
+      - context_files_created
+      - stories_ready_for_dev
+
+  phase_4_5:
+    name: "Verify All Stories Ready for Dev"
+    description: "Ensure no stories are left in drafted/backlog state - mark ready-for-dev if context was skipped"
+    outputs:
+      - verification_report
+      - stories_promoted_without_context
+
+  phase_5:
+    name: "Epic Kickoff Summary"
+    description: "Generate summary, update sprint-status, provide execution guidance"
+    outputs:
+      - kickoff_summary_document
+      - sprint_status_updated
+      - dev_execution_order
+
+# Subagent configuration
+subagent_config:
+  type: "scrum-master"
+  model: "sonnet" # Use sonnet for subagents (faster, sufficient for story creation)
+  timeout: 300000 # 5 minutes per story
+
+# Tell Don't Ask - Context injection structure
+context_injection:
+  epic_briefing:
+    - retro_learnings
+    - applicable_patterns
+    - technical_context
+    - story_dependencies
+  per_story:
+    - story_definition
+    - specific_patterns
+    - architecture_excerpts
+    - predecessor_learnings
+
+standalone: true
+web_bundle: false

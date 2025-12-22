@@ -1,0 +1,18 @@
+# TEA (Test & Evaluation Agent) Index
+
+**Status**: Placeholder
+
+This file would contain an index of test architectures and evaluation frameworks.
+
+## Structure
+
+In a full implementation, this would be a CSV with columns:
+- test_id
+- category
+- description
+- knowledge_path
+- status
+
+## Current Status
+
+Not implemented in SAGE standalone mode. This is a placeholder to satisfy workflow references.

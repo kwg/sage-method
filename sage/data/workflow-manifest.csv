@@ -1,0 +1,65 @@
+workflow_id,name,path,description,agent
+workflow-status,Workflow Status,sage/workflows/software/workflow-status/workflow.yaml,Get workflow status or initialize,all
+brainstorm-project,Brainstorming,sage/core/workflows/brainstorming/workflow.md,Guided brainstorming session,analyst
+research,Research,sage/workflows/software/1-analysis/research/workflow.md,Market/domain/competitive research,analyst
+product-brief,Product Brief,sage/workflows/software/1-analysis/product-brief/workflow.md,Create product brief,analyst
+document-project,Document Project,sage/workflows/software/document-project/workflow.yaml,Document existing project,analyst|tech-writer
+create-prd,Create PRD,sage/workflows/software/2-plan-workflows/prd/workflow.md,Create PRD,pm
+create-ux-design,Create UX Design,sage/workflows/software/2-plan-workflows/create-ux-design/workflow.md,Create UX design,ux-designer
+create-architecture,Create Architecture,sage/workflows/software/3-solutioning/architecture/workflow.md,Create architecture doc,architect
+create-epics-and-stories,Create Epics & Stories,sage/workflows/software/3-solutioning/create-epics-and-stories/workflow.md,Create epics and stories,pm
+implementation-readiness,Implementation Readiness,sage/workflows/software/3-solutioning/implementation-readiness/workflow.md,Validate implementation readiness,architect|pm
+sprint-planning,Sprint Planning,sage/workflows/software/implementation/sprint-planning/workflow.yaml,Generate sprint-status.yaml,sm
+create-story,Create Story,sage/workflows/software/implementation/create-story/workflow.yaml,Create draft story,sm
+develop-story,Develop Story,sage/workflows/software/implementation/dev-story/workflow.yaml,Execute dev story workflow,dev
+code-review,Code Review,sage/workflows/software/implementation/code-review/workflow.yaml,Thorough code review,dev|quick-flow
+correct-course,Correct Course,sage/workflows/software/implementation/correct-course/workflow.yaml,Course correction analysis,pm|sm
+retrospective,Retrospective,sage/workflows/software/implementation/retrospective/workflow.yaml,Facilitate retrospective,sm
+party-mode,Party Mode,sage/core/workflows/party-mode/workflow.md,Multi-agent collaboration,all
+create-tech-spec,Create Tech Spec,sage/workflows/software/quick-flow/create-tech-spec/workflow.yaml,Technical spec with stories,quick-flow
+quick-dev,Quick Dev,sage/workflows/software/quick-flow/quick-dev/workflow.yaml,Implement tech spec solo,quick-flow
+learn-from-this,Learn From This,sage/workflows/software/learn-from-this/workflow.yaml,Learn from problems,all
+git-branch,Git Branch,sage/workflows/SOP-00009-git-branch-workflow.md,Git branch workflow,dev|devops|it
+create-diagram,Create Diagram,sage/workflows/software/diagrams/create-diagram/workflow.yaml,Create Excalidraw diagram,architect|tech-writer
+create-dataflow,Create Dataflow,sage/workflows/software/diagrams/create-dataflow/workflow.yaml,Create data flow diagram,architect|tech-writer
+create-flowchart,Create Flowchart,sage/workflows/software/diagrams/create-flowchart/workflow.yaml,Create flowchart,tech-writer
+create-wireframe,Create Wireframe,sage/workflows/software/diagrams/create-wireframe/workflow.yaml,Create wireframe,ux-designer
+framework,TEA Framework,sage/workflows/software/testarch/framework/workflow.yaml,Initialize test framework,tea
+atdd,TEA ATDD,sage/workflows/software/testarch/atdd/workflow.yaml,Generate E2E tests first,tea
+automate,TEA Automate,sage/workflows/software/testarch/automate/workflow.yaml,Generate test automation,tea
+test-design,TEA Test Design,sage/workflows/software/testarch/test-design/workflow.yaml,Create test scenarios,tea
+trace,TEA Trace,sage/workflows/software/testarch/trace/workflow.yaml,Map requirements to tests,tea
+nfr-assess,TEA NFR Assess,sage/workflows/software/testarch/nfr-assess/workflow.yaml,Validate NFRs,tea
+ci,TEA CI,sage/workflows/software/testarch/ci/workflow.yaml,Scaffold CI/CD pipeline,tea
+test-review,TEA Test Review,sage/workflows/software/testarch/test-review/workflow.yaml,Review test quality,tea
+run-epic,Run Epic,sage/workflows/software/implementation/run-epic/workflow.yaml,Execute epic with phased execution,sm|dev
+sprint-status,Sprint Status,sage/workflows/software/implementation/sprint-status/workflow.yaml,Summarize sprint status and route,sm
+workflow-init,Workflow Init,sage/workflows/software/workflow-status/init/workflow.yaml,Initialize new project,all
+create-agent,Create Agent,sage/workflows/agentbuilder/create-agent/workflow.md,Build SAGE Core compliant agents,sage-builder
+create-module,Create Module,sage/workflows/agentbuilder/create-module/workflow.md,Build complete SAGE modules,sage-builder
+create-workflow,Create Workflow,sage/workflows/agentbuilder/create-workflow/workflow.md,Create structured workflows,sage-builder
+edit-agent,Edit Agent,sage/workflows/agentbuilder/edit-agent/workflow.md,Edit existing SAGE agents,sage-builder
+edit-workflow,Edit Workflow,sage/workflows/agentbuilder/edit-workflow/workflow.md,Edit and improve workflows,sage-builder
+workflow-compliance-check,Workflow Compliance Check,sage/workflows/agentbuilder/workflow-compliance-check/workflow.md,Validate against SAGE standards,sage-builder
+game-brainstorm-game,Game Brainstorm,sage/workflows/game/preproduction/brainstorm-game/workflow.yaml,Facilitate game brainstorming,game-analyst
+game-brief,Game Brief,sage/workflows/game/preproduction/game-brief/workflow.yaml,Create interactive game brief,game-analyst
+game-gdd,Game Design Document,sage/workflows/game/design/gdd/workflow.yaml,Generate comprehensive GDD,game-designer
+game-narrative,Narrative Design,sage/workflows/game/design/narrative/workflow.yaml,Create narrative documentation,game-storyteller
+game-sketch-to-mockup,Sketch to Mockup,sage/workflows/game/design/sketch-to-mockup/workflow.md,Transform sketches to mockups,game-uiux
+game-architecture,Game Architecture,sage/workflows/game/technical/game-architecture/workflow.yaml,Create game technical architecture,game-architect
+game-create-epic,Game Create Epic,sage/workflows/game/production/create-epic/workflow.yaml,Orchestrate complete epic setup,game-pm
+game-sprint-planning,Game Sprint Planning,sage/workflows/game/production/sprint-planning/workflow.yaml,Generate sprint status tracking,game-sm
+game-create-story,Game Create Story,sage/workflows/game/production/create-story/workflow.yaml,Create next user story,game-sm
+game-story-ready,Game Story Ready,sage/workflows/game/production/story-ready/workflow.yaml,Mark story ready for dev,game-sm
+game-story-context,Game Story Context,sage/workflows/game/production/story-context/workflow.yaml,Assemble dynamic story context,game-sm
+game-dev-story,Game Develop Story,sage/workflows/game/production/dev-story/workflow.yaml,Execute story implementation,game-dev
+game-code-review,Game Code Review,sage/workflows/game/production/code-review/workflow.yaml,Senior developer code review,game-dev
+game-story-done,Game Story Done,sage/workflows/game/production/story-done/workflow.yaml,Mark story as done,game-dev
+game-correct-course,Game Correct Course,sage/workflows/game/production/correct-course/workflow.yaml,Sprint change management,game-pm|game-sm
+game-epic-playtest,Game Epic Playtest,sage/workflows/game/production/epic-playtest/workflow.yaml,Run structured playtesting,game-qa
+game-full-qa,Game Full QA,sage/workflows/game/production/full-qa/workflow.yaml,Comprehensive automated QA,game-qa
+game-epic-complete,Game Epic Complete,sage/workflows/game/production/epic-complete/workflow.yaml,Verify epic ready for completion,game-sm
+game-retrospective,Game Retrospective,sage/workflows/game/production/retrospective/workflow.yaml,Epic completion review,game-sm
+game-epic-tech-context,Game Epic Tech Context,sage/workflows/game/production/epic-tech-context/workflow.yaml,Generate technical specification,game-architect
+game-run-epic,Game Run Epic,sage/workflows/game/production/run-epic-orchestrated/workflow.yaml,Execute epic with phased execution,game-sm|game-dev
+game-ui-status,Game UI Status,sage/workflows/game/production/ui-status/workflow.md,Track UI/UX pipeline status,game-uiux

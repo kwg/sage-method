@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Git Branch Protocols
+
+  Reusable protocols for git branch management in SAGE workflows.
+  Implements SOP-00009: Git Branch Workflow for Story Development.
+
+  Used by: create-story (drafting branch), dev-story (implementation branch)
+
+  Usage in workflow instructions:
+    <invoke-protocol name="ensure_drafting_branch" />
+    <invoke-protocol name="ensure_implementation_branch" />
+    <invoke-protocol name="merge_story_to_epic" />
+
+  Requires workflow.yaml to define:
+    story_key: "{epic}-{story}-{slug}" format
+    epic_num: extracted from story_key
+
+  Branch Hierarchy:
+    main
+      └── dev (staging for epic merges to main)
+            └── epic-{x} (accumulates all stories for epic)
+                  └── {story_key} (individual story work)
+
+  Branch Patterns:
+    - Epic branch: epic-{epic_num} (e.g., epic-1, epic-3)
+    - Drafting branch: {epic}-0-story-creation (e.g., 3-0-story-creation)
+    - Implementation branch: {story_key} (e.g., 3-3-state-recovery-via-log-replay)
+
+  Workflow:
+    1. Story branches are created from epic-{x}
+    2. When story is done, story branch is merged into epic-{x}
+    3. When epic is done, epic-{x} is PR'd to dev
+    4. dev is merged to main for releases
+-->
+
+<!--
+  Protocol: ensure_drafting_branch
+
+  Creates or switches to the epic's drafting branch for story creation work.
+  Branch pattern: {epic}-0-story-creation
+
+  Used by: create-story workflow
+
+  Requires:
+    {{epic_num}} - The epic number (e.g., "3")
+
+  Sets:
+    {{drafting_branch}} - The drafting branch name
+    {{branch_ready}} - true if on correct branch
+-->
+<protocol name="ensure_drafting_branch" desc="Ensure on drafting branch for story creation">
+  <action>Set {{drafting_branch}} = "{{epic_num}}-0-story-creation"</action>
+  <action>Get current git branch: git branch --show-current</action>
+  <action>Store as {{current_branch}}</action>
+
+  <!-- Already on correct branch -->
+  <check if="{{current_branch}} == {{drafting_branch}}">
+    <output>✅ Already on drafting branch: {{drafting_branch}}</output>
+    <action>Set {{branch_ready}} = true</action>
+    <return />
+  </check>
+
+  <!-- Check if drafting branch exists -->
+  <action>Check local: git branch --list {{drafting_branch}}</action>
+  <action>Check remote: git ls-remote --heads origin {{drafting_branch}}</action>
+
+  <!-- Branch exists locally -->
+  <check if="drafting branch exists locally">
+    <action>Check for uncommitted changes: git status --porcelain</action>
+
+    <check if="uncommitted changes exist">
+      <output>⚠️ Uncommitted changes on {{current_branch}}</output>
+      <ask>
+Options:
+a. Stash changes and switch to {{drafting_branch}}
+b. Commit changes on {{current_branch}} first
+c. HALT - handle manually
+
+Choose [a], [b], or [c]:
+      </ask>
+
+      <check if="user chooses 'a'">
+        <action>Run: git stash push -m "WIP before switching to {{drafting_branch}}"</action>
+        <output>✅ Changes stashed</output>
+      </check>
+
+      <check if="user chooses 'b'">
+        <ask>Enter commit message:</ask>
+        <action>Run: git add . && git commit -m "{{user_message}}"</action>
+        <output>✅ Changes committed</output>
+      </check>
+
+      <check if="user chooses 'c'">
+        <action>HALT - User will handle uncommitted changes manually</action>
+      </check>
+    </check>
+
+    <action>Run: git checkout {{drafting_branch}}</action>
+    <action>Run: git pull origin {{drafting_branch}} --rebase 2>/dev/null || true</action>
+    <output>✅ Switched to drafting branch: {{drafting_branch}}</output>
+    <action>Set {{branch_ready}} = true</action>
+    <return />
+  </check>
+
+  <!-- Branch exists on remote only -->
+  <check if="drafting branch exists on remote but NOT locally">
+    <action>Run: git fetch origin</action>
+    <action>Run: git checkout -b {{drafting_branch}} origin/{{drafting_branch}}</action>
+    <output>✅ Checked out remote drafting branch: {{drafting_branch}}</output>
+    <action>Set {{branch_ready}} = true</action>
+    <return />
+  </check>
+
+  <!-- Branch does not exist - create it -->
+  <check if="drafting branch does NOT exist locally or remotely">
+    <action>Check for uncommitted changes: git status --porcelain</action>
+
+    <check if="uncommitted changes exist">
+      <output>⚠️ Uncommitted changes must be handled before creating new branch</output>
+      <ask>
+Stash changes and create {{drafting_branch}}? [y/n]:
+      </ask>
+
+      <check if="user confirms yes">
+        <action>Run: git stash push -m "WIP before creating {{drafting_branch}}"</action>
+      </check>
+
+      <check if="user declines">
+        <action>HALT - Handle uncommitted changes first</action>
+      </check>
+    </check>
+
+    <action>Run: git fetch origin</action>
+    <action>Run: git checkout -b {{drafting_branch}} origin/dev</action>
+    <output>✅ Created drafting branch: {{drafting_branch}} from origin/dev</output>
+
+    <action>Run: git push -u origin {{drafting_branch}}</action>
+    <output>✅ Pushed drafting branch to remote</output>
+
+    <action>Set {{branch_ready}} = true</action>
+  </check>
+</protocol>
+
+<!--
+  Protocol: ensure_implementation_branch
+
+  Creates or switches to the story's implementation branch.
+  Branch pattern: {story_key} (e.g., 3-3-state-recovery-via-log-replay)
+
+  Used by: dev-story workflow
+
+  Requires:
+    {{story_key}} - The full story key (e.g., "3-3-state-recovery-via-log-replay")
+
+  Sets:
+    {{implementation_branch}} - The implementation branch name (same as story_key)
+    {{branch_ready}} - true if on correct branch
+-->
+<protocol name="ensure_implementation_branch" desc="Ensure on implementation branch for story development">
+  <action>Set {{implementation_branch}} = "{{story_key}}"</action>
+  <action>Get current git branch: git branch --show-current</action>
+  <action>Store as {{current_branch}}</action>
+
+  <!-- Already on correct branch -->
+  <check if="{{current_branch}} == {{implementation_branch}}">
+    <output>✅ Already on implementation branch: {{implementation_branch}}</output>
+    <action>Set {{branch_ready}} = true</action>
+    <return />
+  </check>
+
+  <!-- Branch name starts with story_key (allows suffixes) -->
+  <check if="{{current_branch}} starts with {{implementation_branch}}">
+    <output>✅ On matching branch: {{current_branch}} (matches {{implementation_branch}})</output>
+    <action>Set {{branch_ready}} = true</action>
+    <return />
+  </check>
+
+  <!-- Wrong branch - need to switch -->
+  <output>⚠️ **BRANCH MISMATCH DETECTED**
+
+Current Branch: {{current_branch}}
+Expected Branch: {{implementation_branch}}
+
+**SOP-00009 Rule #4**: Development must occur on the correct feature branch.
+  </output>
+
+  <!-- Check if implementation branch exists -->
+  <action>Check local: git branch --list {{implementation_branch}}</action>
+  <action>Check remote: git ls-remote --heads origin {{implementation_branch}}</action>
+
+  <!-- Branch exists locally -->
+  <check if="implementation branch exists locally">
+    <ask>
+**Options:**
+1. Switch to existing branch {{implementation_branch}}
+2. Continue on current branch {{current_branch}} (violates SOP-00009)
+3. HALT and let me handle it manually
+
+Choose [1], [2], or [3]:
+    </ask>
+
+    <check if="user chooses '1'">
+      <action>Check for uncommitted changes: git status --porcelain</action>
+
+      <check if="uncommitted changes exist">
+        <ask>
+⚠️ **Uncommitted changes detected**
+
+Options:
+a. Stash changes: git stash push -m "WIP before switching to {{implementation_branch}}"
+b. Commit changes on {{current_branch}}
+c. Discard changes (requires confirmation)
+d. HALT
+
+Choose [a], [b], [c], or [d]:
+        </ask>
+
+        <check if="user chooses 'a'">
+          <action>Run: git stash push -m "WIP before switching to {{implementation_branch}}"</action>
+        </check>
+
+        <check if="user chooses 'b'">
+          <ask>Enter commit message:</ask>
+          <action>Run: git add . && git commit -m "{{user_message}}"</action>
+        </check>
+
+        <check if="user chooses 'c'">
+          <ask>⚠️ Are you sure? This will discard all uncommitted changes. Type 'YES' to confirm:</ask>
+          <check if="user confirms 'YES'">
+            <action>Run: git checkout -- .</action>
+          </check>
+          <check if="user does NOT confirm">
+            <action>HALT - User did not confirm discard</action>
+          </check>
+        </check>
+
+        <check if="user chooses 'd'">
+          <action>HALT - User requested manual handling</action>
+        </check>
+      </check>
+
+      <action>Run: git checkout {{implementation_branch}}</action>
+      <output>✅ Switched to branch {{implementation_branch}}</output>
+      <action>Set {{branch_ready}} = true</action>
+    </check>
+
+    <check if="user chooses '2'">
+      <output>⚠️ **WARNING**: Proceeding on {{current_branch}} violates SOP-00009 Rule #4</output>
+      <action>Set {{branch_ready}} = true</action>
+    </check>
+
+    <check if="user chooses '3'">
+      <action>HALT - User will handle branch switching manually</action>
+    </check>
+
+    <return />
+  </check>
+
+  <!-- Branch exists on remote only -->
+  <check if="implementation branch exists on remote but NOT locally">
+    <ask>
+🔄 **BRANCH EXISTS ON REMOTE**
+
+Branch {{implementation_branch}} exists on remote but not locally.
+
+Options:
+1. Checkout remote branch: git checkout -b {{implementation_branch}} origin/{{implementation_branch}}
+2. HALT and let me handle it manually
+
+Choose [1] or [2]:
+    </ask>
+
+    <check if="user chooses '1'">
+      <action>Run: git fetch origin</action>
+      <action>Run: git checkout -b {{implementation_branch}} origin/{{implementation_branch}}</action>
+      <output>✅ Checked out remote branch {{implementation_branch}}</output>
+      <action>Set {{branch_ready}} = true</action>
+    </check>
+
+    <check if="user chooses '2'">
+      <action>HALT - User will handle branch checkout manually</action>
+    </check>
+
+    <return />
+  </check>
+
+  <!-- Branch does not exist anywhere -->
+  <check if="implementation branch does NOT exist locally OR remotely">
+    <!-- Extract epic number from story key (e.g., "1-3-hp-system" -> "1") -->
+    <action>Extract {{epic_num}} from {{story_key}} (first segment before hyphen)</action>
+    <action>Set {{epic_branch}} = "epic-{{epic_num}}"</action>
+
+    <output>🛑 **BRANCH NOT FOUND**
+
+Expected feature branch {{implementation_branch}} does not exist locally or remotely.
+
+**Resolution Options:**
+1. Create branch from {{epic_branch}}: git checkout -b {{implementation_branch}} origin/{{epic_branch}}
+2. Run create-story workflow (creates branch automatically)
+3. HALT and let me create it manually
+
+**Branch Hierarchy**: main → dev → {{epic_branch}} → {{implementation_branch}}
+    </output>
+
+    <ask>Choose [1], [2], or [3]:</ask>
+
+    <check if="user chooses '1'">
+      <action>Check for uncommitted changes: git status --porcelain</action>
+      <check if="uncommitted changes exist">
+        <output>⚠️ Uncommitted changes must be handled first</output>
+        <action>HALT - Handle uncommitted changes before creating branch</action>
+      </check>
+
+      <action>Run: git fetch origin</action>
+
+      <!-- Ensure epic branch exists -->
+      <action>Check if {{epic_branch}} exists: git ls-remote --heads origin {{epic_branch}}</action>
+      <check if="epic branch does NOT exist">
+        <output>⚠️ Epic branch {{epic_branch}} does not exist. Creating from dev...</output>
+        <action>Run: git checkout -b {{epic_branch}} origin/dev</action>
+        <action>Run: git push -u origin {{epic_branch}}</action>
+        <output>✅ Created epic branch: {{epic_branch}}</output>
+      </check>
+
+      <action>Run: git checkout -b {{implementation_branch}} origin/{{epic_branch}}</action>
+      <action>Run: git push -u origin {{implementation_branch}}</action>
+      <output>✅ Created and pushed branch {{implementation_branch}} from {{epic_branch}}</output>
+      <action>Set {{branch_ready}} = true</action>
+    </check>
+
+    <check if="user chooses '2'">
+      <action>HALT - Run create-story workflow to create story with branch</action>
+    </check>
+
+    <check if="user chooses '3'">
+      <action>HALT - User will create branch manually</action>
+    </check>
+  </check>
+</protocol>
+
+<!--
+  Protocol: commit_story_draft
+
+  Commits the current story draft on the drafting branch.
+  Called after story file is saved in create-story workflow.
+
+  Requires:
+    {{story_key}} - The story key being drafted
+    {{story_file}} - Path to the story file
+-->
+<protocol name="commit_story_draft" desc="Commit story draft to drafting branch">
+  <action>Run: git add {{story_file}}</action>
+  <action>Run: git add {{sprint_status}} 2>/dev/null || true</action>
+  <action>Run: git commit -m "draft({{story_key}}): Create story file
+
+Story: {{story_key}}
+Status: ready-for-dev
+
+🤖 Generated with SAGE create-story workflow"</action>
+  <output>✅ Story draft committed: {{story_key}}</output>
+
+  <action>Run: git push origin {{drafting_branch}}</action>
+  <output>✅ Pushed to {{drafting_branch}}</output>
+</protocol>
+
+<!--
+  Protocol: merge_story_to_epic
+
+  Merges the completed story branch into the epic branch.
+  Called at the end of dev-story workflow when story is done.
+
+  Branch Hierarchy: main → dev → epic-{x} → {story_key}
+
+  Requires:
+    {{story_key}} - The story key (e.g., "1-3-hp-and-damage-system")
+    {{epic_num}} - The epic number (e.g., "1")
+
+  Sets:
+    {{merge_complete}} - true if merge was successful
+
+  Actions:
+    1. Ensure all changes are committed on story branch
+    2. Switch to epic branch
+    3. Merge story branch with --no-ff (creates merge commit)
+    4. Push epic branch
+    5. Optionally delete story branch
+-->
+<protocol name="merge_story_to_epic" desc="Merge completed story branch into epic branch">
+  <action>Set {{story_branch}} = "{{story_key}}"</action>
+  <action>Set {{epic_branch}} = "epic-{{epic_num}}"</action>
+  <action>Get current git branch: git branch --show-current</action>
+  <action>Store as {{current_branch}}</action>
+
+  <!-- Ensure we're on story branch and all changes are committed -->
+  <check if="{{current_branch}} != {{story_branch}}">
+    <output>⚠️ Expected to be on {{story_branch}} but on {{current_branch}}</output>
+    <action>HALT - Must be on story branch to merge</action>
+  </check>
+
+  <action>Check for uncommitted changes: git status --porcelain</action>
+  <check if="uncommitted changes exist">
+    <output>⚠️ **Uncommitted changes detected**
+
+All changes must be committed before merging to epic branch.
+    </output>
+    <ask>
+Options:
+a. Commit all changes with message "feat({{story_key}}): Final implementation"
+b. HALT and let me commit manually
+
+Choose [a] or [b]:
+    </ask>
+
+    <check if="user chooses 'a'">
+      <action>Run: git add .</action>
+      <action>Run: git commit -m "feat({{story_key}}): Final implementation
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"</action>
+      <output>✅ Changes committed</output>
+    </check>
+
+    <check if="user chooses 'b'">
+      <action>HALT - Commit changes manually then re-run</action>
+    </check>
+  </check>
+
+  <!-- Push story branch to ensure remote is up to date -->
+  <action>Run: git push origin {{story_branch}}</action>
+  <output>✅ Story branch pushed to origin</output>
+
+  <!-- Switch to epic branch -->
+  <action>Run: git fetch origin</action>
+  <action>Run: git checkout {{epic_branch}}</action>
+  <action>Run: git pull origin {{epic_branch}} --rebase</action>
+  <output>✅ Switched to {{epic_branch}}</output>
+
+  <!-- Merge story branch with merge commit -->
+  <action>Run: git merge --no-ff {{story_branch}} -m "Merge story {{story_key}}
+
+Story: {{story_key}}
+Status: done
+
+Merged story implementation into epic branch.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)"</action>
+
+  <check if="merge conflict occurs">
+    <output>❌ **MERGE CONFLICT**
+
+Conflicts occurred merging {{story_branch}} into {{epic_branch}}.
+Please resolve conflicts manually.
+    </output>
+    <action>HALT - Resolve merge conflicts</action>
+  </check>
+
+  <output>✅ Story {{story_key}} merged into {{epic_branch}}</output>
+
+  <!-- Push epic branch -->
+  <action>Run: git push origin {{epic_branch}}</action>
+  <output>✅ Epic branch pushed to origin</output>
+
+  <!-- Ask about deleting story branch -->
+  <ask>
+Story {{story_key}} has been merged into {{epic_branch}}.
+
+Delete the story branch?
+1. Yes - delete local and remote story branch
+2. No - keep story branch for reference
+
+Choose [1] or [2]:
+  </ask>
+
+  <check if="user chooses '1'">
+    <action>Run: git branch -d {{story_branch}}</action>
+    <action>Run: git push origin --delete {{story_branch}} 2>/dev/null || true</action>
+    <output>✅ Story branch {{story_branch}} deleted</output>
+  </check>
+
+  <check if="user chooses '2'">
+    <output>ℹ️ Story branch {{story_branch}} kept for reference</output>
+  </check>
+
+  <action>Set {{merge_complete}} = true</action>
+  <output>🎉 **Story Complete!**
+
+{{story_key}} has been merged into {{epic_branch}}.
+
+Next steps:
+- Start next story: Run dev-story workflow
+- When epic is complete: Create PR from {{epic_branch}} to dev
+  </output>
+</protocol>

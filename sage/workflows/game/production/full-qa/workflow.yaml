@@ -1,0 +1,42 @@
+# Full QA Test Suite Workflow
+name: full-qa
+description: "Run comprehensive automated QA test suite across all game features using agent testing framework. Opens every menu, clicks every button, exercises all game flows."
+author: "SAGE"
+
+# Critical variables from config
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+sprint_artifacts: "{config_source}:sprint_artifacts"
+sprint_status: "{sprint_artifacts}/sprint-status.yaml || {output_folder}/sprint-status.yaml"
+
+# Workflow components
+installed_path: "{project-root}/sage/workflows/game/production/full-qa"
+instructions: "{installed_path}/instructions.md"
+template: false
+
+variables:
+  project_path: "{project-root}"
+  agent_config: "{project-root}/autoloads/agent_config.json"
+  testing_docs: "{project-root}/docs/workflows/agent-testing-workflow.md"
+  qa_output_dir: "{sprint_artifacts}/qa-results"
+  screenshots_dir: "{qa_output_dir}/screenshots"
+
+# Input file patterns
+input_file_patterns:
+  agent_config:
+    description: "Agent testing configuration with test suites"
+    whole: "{project-root}/autoloads/agent_config.json"
+    load_strategy: "FULL_LOAD"
+  testing_docs:
+    description: "Agent testing framework documentation"
+    whole: "{project-root}/docs/workflows/agent-testing-workflow.md"
+    load_strategy: "FULL_LOAD"
+  qa_manifest:
+    description: "Optional epic-specific QA manifest"
+    whole: "{sprint_artifacts}/epic-*/qa-manifest.yaml"
+    load_strategy: "SELECTIVE_LOAD"
+
+standalone: true
+web_bundle: false

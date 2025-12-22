@@ -1,0 +1,119 @@
+# File Location Rules
+# Version: 1.0
+#
+# These rules define where different artifact types must be located.
+# Violations result in errors at creation time.
+
+version: "1.0"
+
+rules:
+  # Epic files
+  epic:
+    allowed_paths:
+      - "docs/epics/{epic_id}.md"
+      - "docs/epics/{epic_id}/epic.md"
+      - "docs/sprint-artifacts/epics/{epic_id}.md"
+      - "docs/sprint-artifacts/epics/{epic_id}/epic.md"
+    required_fields:
+      - title
+      - status
+      - stories (section or links)
+    naming:
+      pattern: "^[A-Z]+-[0-9]+.*\\.md$|^epic\\.md$"
+      examples:
+        - "EPIC-001.md"
+        - "EPIC-001-lifecycle-standardization.md"
+        - "epic.md"
+
+  # Story files
+  story:
+    allowed_paths:
+      - "{epic_dir}/{story_id}.md"
+      - "{epic_dir}/stories/{story_id}.md"
+    required_fields:
+      - title
+      - status
+      - acceptance_criteria
+      - tasks
+    naming:
+      pattern: "^[0-9]+-[0-9]+.*\\.md$|^[a-z-]+\\.md$"
+      examples:
+        - "001-1.md"
+        - "001-1-user-authentication.md"
+        - "user-auth.md"
+
+  # State files
+  state:
+    allowed_paths:
+      - "state/epic-{epic_id}-state.json"
+      - "{workflow_dir}/state/epic-{epic_id}-state.json"
+    gitignore: true  # Recommended to gitignore
+    naming:
+      pattern: "^epic-[a-z0-9-]+-state\\.json$"
+
+  # Metrics files
+  metrics:
+    allowed_paths:
+      - "docs/sprint-artifacts/epic-{epic_id}-metrics.json"
+    naming:
+      pattern: "^epic-[a-z0-9-]+-metrics\\.json$"
+
+  # Learning files
+  learning:
+    allowed_paths:
+      - "docs/sprint-artifacts/learning/epic-{epic_id}-learnings.md"
+      - "docs/sprint-artifacts/learning/patterns.json"
+      - "docs/sprint-artifacts/learning/records/*.json"
+    naming:
+      patterns:
+        - "^epic-[a-z0-9-]+-learnings\\.md$"
+        - "^lr-[0-9-]+\\.json$"  # Learning record
+
+  # Validation files
+  validation:
+    allowed_paths:
+      - "docs/sprint-artifacts/epic-{epic_id}-validation.md"
+    naming:
+      pattern: "^epic-[a-z0-9-]+-validation\\.md$"
+
+  # Workflow files
+  workflow:
+    structure:
+      - "workflow.yaml"           # Required
+      - "workflow.md"             # Required for stepped
+      - "steps/*.md"              # For stepped workflows
+      - "phases/*.md"             # For phased orchestrators
+      - "state-schema.json"       # For stateful workflows
+    naming:
+      workflow: "workflow.yaml|workflow.md"
+      steps: "step-[0-9]+-.*\\.md"
+      phases: "[0-9]+-.*\\.md"
+
+  # Agent files
+  agent:
+    allowed_paths:
+      - "agents/{category}/{name}.md"
+      - "agents/{category}/{name}.agent.xml"
+    categories:
+      - core
+      - software
+      - game
+      - agentbuilder
+      - wrappers
+    naming:
+      pattern: "^[a-z-]+\\.(md|agent\\.xml)$"
+
+# Validation
+validation:
+  on_create:
+    - determine_artifact_type()
+    - check_path_allowed()
+    - check_required_fields()
+    - check_naming_convention()
+    - return_result()
+
+  on_failure:
+    action: error
+    message: |
+      File location '{{path}}' is not allowed for {{artifact_type}}.
+      Allowed locations: {{allowed_paths}}

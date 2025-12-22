@@ -1,0 +1,100 @@
+name: context-clear-example
+description: "Example workflow demonstrating context clearing between steps for clean slate execution"
+author: "SAGE"
+
+# Critical variables from config
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+
+standalone: true
+
+steps:
+  - id: step-1
+    name: "Initial Analysis"
+    description: "Perform initial analysis and gather context"
+    context_mode: "normal"
+    actions:
+      - type: "analyze"
+        description: "Read and analyze target files"
+        # This step will have full context from the conversation
+      - type: "output"
+        format: "markdown"
+        filename: "{output_folder}/step-1-analysis-{date}.md"
+        content: |
+          # Step 1: Initial Analysis Results
+          
+          Document your findings here with full context available.
+    
+  - id: step-2
+    name: "Fresh Context Review"
+    description: "Review with cleared context - start clean"
+    context_mode: "clear"  # 🚨 THIS CLEARS CONTEXT BEFORE STEP-2
+    clear_instructions: |
+      🧹 CONTEXT CLEARED - Fresh Start Required
+      
+      You are now executing Step 2 with a clean context window.
+      Previous conversation history has been intentionally cleared.
+      
+      Load only what you need:
+      1. Read the output from Step 1: {output_folder}/step-1-analysis-{date}.md
+      2. Follow the instructions below without any prior assumptions
+      3. Execute this step independently
+      
+    actions:
+      - type: "read"
+        files:
+          - "{output_folder}/step-1-analysis-{date}.md"
+      - type: "analyze"
+        description: "Perform fresh analysis based only on Step 1 output"
+      - type: "output"
+        format: "markdown"
+        filename: "{output_folder}/step-2-fresh-review-{date}.md"
+        content: |
+          # Step 2: Fresh Context Review Results
+          
+          Document findings from clean context perspective.
+          Reference Step 1 output explicitly.
+
+  - id: step-3
+    name: "Integration"
+    description: "Combine insights from both steps"
+    context_mode: "normal"
+    actions:
+      - type: "read"
+        files:
+          - "{output_folder}/step-1-analysis-{date}.md"
+          - "{output_folder}/step-2-fresh-review-{date}.md"
+      - type: "synthesize"
+        description: "Combine insights from both perspectives"
+      - type: "output"
+        format: "markdown"
+        filename: "{output_folder}/final-synthesis-{date}.md"
+        content: |
+          # Final Synthesis
+          
+          Combined insights from Step 1 (full context) and Step 2 (clean context)
+
+validation:
+  - "Step 1 output file exists"
+  - "Step 2 output file exists with fresh perspective"
+  - "Final synthesis combines both perspectives"
+
+notes: |
+  Context Clearing Pattern:
+  
+  When context_mode: "clear" is specified:
+  - The agent should treat this as a new conversation
+  - Load only explicitly specified files/data
+  - Avoid assumptions from prior steps
+  - Use clear_instructions as the starting point
+  
+  Use Cases:
+  - Code review without bias from implementation discussion
+  - Independent validation of decisions
+  - Token optimization for long workflows
+  - Fresh perspective on complex problems
+  - Avoiding context contamination

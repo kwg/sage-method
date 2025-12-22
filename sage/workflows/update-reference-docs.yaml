@@ -1,0 +1,147 @@
+name: update-reference-docs
+description: "Update reference documentation from canonical sources and optimize for agent consumption"
+author: "SAGE"
+
+# Critical variables from config
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+
+standalone: true
+
+parameters:
+  categories:
+    description: "Which documentation categories to update (nixos, python, git, bash, all)"
+    default: "all"
+  mode:
+    description: "Operation mode: update, check, validate"
+    default: "update"
+
+steps:
+  - id: step-1
+    name: "Validate Current Documentation"
+    description: "Check current documentation structure and identify gaps"
+    actions:
+      - type: "execute"
+        command: "./scripts/update-docs.sh --validate"
+        description: "Validate documentation structure"
+      - type: "output"
+        format: "markdown"
+        filename: "{output_folder}/doc-validation-{date}.md"
+        content: |
+          # Documentation Validation Report
+          
+          **Date**: {date}
+          **Validation Results**: [Success/Failure]
+          
+          ## Structure Check
+          - [ ] Main README exists
+          - [ ] All category directories present
+          - [ ] Category READMEs exist
+          - [ ] No broken internal links
+          
+          ## Gaps Identified
+          - Missing: [list any missing docs]
+          - Outdated: [list any outdated docs]
+          
+          ## Recommendations
+          [Agent recommendations for improvement]
+    
+  - id: step-2
+    name: "Fetch and Process Documentation"
+    description: "Download canonical docs and optimize for agent use"
+    actions:
+      - type: "execute"
+        command: "./scripts/update-docs.sh {parameters.categories}"
+        description: "Update documentation from canonical sources"
+      - type: "review"
+        description: "Review fetched documentation for completeness"
+        targets:
+          - "docs/reference/nixos/README.md"
+          - "docs/reference/python/README.md"
+          - "docs/reference/git/README.md"
+          - "docs/reference/bash/README.md"
+  
+  - id: step-3
+    name: "Optimize for Agent Consumption"
+    description: "Process documentation for optimal agent searchability and usage"
+    actions:
+      - type: "process"
+        description: "Apply agent-optimization rules"
+        rules:
+          - "Extract code examples to separate sections"
+          - "Add Quick Reference sections at top"
+          - "Remove marketing/prose content"
+          - "Add metadata headers (source, version, date)"
+          - "Create searchable headings"
+          - "Include error handling examples"
+      - type: "test"
+        description: "Test agent can find and use documentation"
+        command: "semantic_search 'nixos bluetooth configuration'"
+  
+  - id: step-4
+    name: "Verify and Commit Changes"
+    description: "Review changes and commit updated documentation"
+    actions:
+      - type: "execute"
+        command: "git diff docs/reference/"
+        description: "Review documentation changes"
+      - type: "execute"
+        command: "./scripts/git-commit-push.sh 'docs: update reference documentation to {date}'"
+        description: "Commit documentation updates"
+      - type: "output"
+        format: "markdown"
+        filename: "{output_folder}/doc-update-summary-{date}.md"
+        content: |
+          # Documentation Update Summary
+          
+          **Date**: {date}
+          **Categories Updated**: {parameters.categories}
+          
+          ## Changes Made
+          - Files added: [count]
+          - Files updated: [count]
+          - Total size: [size]
+          
+          ## New Documentation
+          [List new doc files]
+          
+          ## Updated Documentation
+          [List updated doc files with version changes]
+          
+          ## Testing Results
+          - [ ] Agent semantic search works
+          - [ ] All links valid
+          - [ ] Metadata complete
+          - [ ] Code examples functional
+          
+          ## Next Update Recommended
+          [Date based on update frequency]
+
+validation:
+  - "All category READMEs exist"
+  - "Metadata headers present on all docs"
+  - "Agent semantic search returns relevant results"
+  - "Git commit successful"
+
+best_practices:
+  - "Run monthly to keep docs current"
+  - "Always validate before updating"
+  - "Review git diff before committing"
+  - "Test agent search after updates"
+  - "Update project-context-agent.md if new categories added"
+
+notes: |
+  This workflow maintains the reference documentation that agents use to
+  complete tasks correctly the first time. 
+  
+  Key Principles:
+  - Canonical sources only (official docs, man pages)
+  - Agent-optimized format (searchable, concrete examples)
+  - Version tracking (know when docs are outdated)
+  - Automated updates (reduce manual maintenance)
+  
+  Agents should ALWAYS check reference docs before implementing to ensure
+  they use the correct, current syntax and patterns.

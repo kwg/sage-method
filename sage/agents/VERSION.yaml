@@ -1,0 +1,207 @@
+# SAGE Agent Version Tracking
+# ============================
+# Tracks which SAGE version each SAGE agent was derived from,
+# their customization status, and sync history.
+#
+# Run the agent sync workflow to compare against SAGE upstream
+# and detect new logic or improvements.
+
+# Current SAGE reference version
+upstream_source_version: "6.0.0-alpha.19"
+upstream_commit: "5c756b64"
+initial_copy_date: "2025-12-10"
+last_sync_check: "2025-12-18"
+
+# Agent status legend:
+#   derived     - Started from SAGE, heavily customized for SAGE
+#   sage-native - Created specifically for SAGE, no SAGE equivalent
+#   vanilla     - Direct copy from SAGE, minimal changes
+#   new         - New agent from SAGE not yet in SAGE
+
+# Claude Command Naming Convention
+# ================================
+# Wrappers use group prefixes for clustering in Claude Code:
+#   software-*  - Software development agents (from BMM + sage-native)
+#   game-*      - Game development agents (from BMGD)
+#   cis-*       - Creative Intelligence Suite agents
+#   agentdev-*  - Agent building/meta agents (from BMB + core)
+
+# Module: BMM (SAGE Method Module) -> Claude prefix: software-
+# =============================================================
+# These are the core development methodology agents
+bmm:
+  analyst:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, menu-handlers, communication rules"
+
+  architect:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, menu-handlers, communication rules"
+
+  dev:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Heavily customized - NixOS rules, git operations, TDD rules, SOP loading"
+
+  pm:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, menu-handlers, communication rules"
+
+  quick-flow-solo-dev:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, menu-handlers"
+
+  sm:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, sprint workflow customizations"
+
+  tea:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, testarch knowledge integration"
+
+  tech-writer:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, documentation standards"
+
+  ux-designer:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Added SOP activation, menu-handlers"
+
+# SAGE-Native Agents (no SAGE equivalent) -> Claude prefix: software-
+# =====================================================================
+sage-native:
+  devops:
+    status: sage-native
+    created_date: "2025-12-10"
+    notes: "SAGE-specific agent for infrastructure and deployment"
+
+  it:
+    status: sage-native
+    created_date: "2025-12-10"
+    notes: "SAGE-specific agent for NixOS configuration management"
+
+# Module: BMB (SAGE Builder Module) -> Claude prefix: agentdev-
+# ===============================================================
+# Agent for building custom agents and workflows
+bmb:
+  sage-builder:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+# Core agents -> Claude prefix: agentdev-
+# ========================================
+core:
+  sage-master:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Master orchestrator, imported with SOP-00001 activation wrapper"
+
+# Module: BMGD (SAGE Game Development) -> Claude prefix: game-
+# ==============================================================
+# Game development specialized agents
+bmgd:
+  game-architect:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-18"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  game-designer:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-18"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  game-dev:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-18"
+    notes: "Imported with SOP-00001 activation wrapper, BMGD production workflows"
+
+  game-scrum-master:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-18"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  game-qa-architect:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.19"
+    last_sync_check: "2025-12-18"
+    notes: "NEW - QA strategy/architecture agent (GLaDOS persona). Complements qa-tester."
+
+  game-solo-dev:
+    status: derived
+    upstream_source_version: "6.0.0-alpha.19"
+    last_sync_check: "2025-12-18"
+    notes: "NEW - Indie quick flow specialist (Indie persona)"
+
+  qa-tester:
+    status: sage-native
+    created_date: "2025-12-18"
+    notes: "SAGE-specific execution-focused QA agent (Debug McTestface persona)"
+
+  game-uiux:
+    status: sage-native
+    created_date: "2025-12-18"
+    notes: "SAGE-specific UI/UX agent (Pixel persona) with UI Preview Tool integration"
+
+# Module: CIS (Creative Intelligence Suite) -> Claude prefix: cis-
+# ==================================================================
+# Creative and innovation focused agents
+cis:
+  brainstorming-coach:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  creative-problem-solver:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  design-thinking-coach:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  innovation-strategist:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  presentation-master:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
+
+  storyteller:
+    status: vanilla
+    upstream_source_version: "6.0.0-alpha.15"
+    last_sync_check: "2025-12-13"
+    notes: "Imported with SOP-00001 activation wrapper"
