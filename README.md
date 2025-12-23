@@ -29,7 +29,7 @@ SAGE enforces strict truth chains. Each layer inherits from exactly one source. 
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR-USERNAME/sage-method.git
+git clone https://github.com/kwg/sage-method.git
 cd sage-method
 
 # Run setup (interactive prompts for config)
