@@ -40,11 +40,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SAGE_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(cd "$SAGE_ROOT/.." && pwd)"
 
-# Detect if we're in the sage-framework repo itself
+# Detect if we're in the sage-method repo itself (not as a submodule)
 SAGE_BASENAME="$(basename "$SAGE_ROOT")"
-if [[ "$SAGE_BASENAME" == "sage-framework" ]] && [[ ! -L "$SAGE_ROOT" ]]; then
-    echo -e "${RED}[ERROR]${NC} Cannot run setup from within sage-framework repo itself"
-    echo -e "${RED}[ERROR]${NC} This script should be run from a project that uses SAGE as a submodule"
+if [[ "$SAGE_BASENAME" == "sage-method" ]] && [[ ! -L "$SAGE_ROOT" ]]; then
+    echo -e "${RED}[ERROR]${NC} Cannot run setup from within sage-method repo itself"
+    echo -e "${RED}[ERROR]${NC} Clone or submodule this repo into your project as 'sage/', then run:"
+    echo -e "${RED}[ERROR]${NC}   ./sage/scripts/setup.sh --user \"Your Name\""
     exit 1
 fi
 
