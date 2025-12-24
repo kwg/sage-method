@@ -237,29 +237,37 @@ if [[ -z "$USER_NAME" ]]; then
     exit 1
 fi
 
-# Step 1: Create project-sage directory structure
-log_step "Step 1: Creating project-sage directory structure"
+# Step 1: Copy project-sage template
+log_step "Step 1: Installing project-sage from template"
 
 PROJECT_SAGE_DIR="$PROJECT_ROOT/project-sage"
-DIRECTORIES=(
-    "$PROJECT_SAGE_DIR"
-    "$PROJECT_SAGE_DIR/agents"
-    "$PROJECT_SAGE_DIR/workflows"
-    "$PROJECT_SAGE_DIR/knowledge"
-)
+TEMPLATE_DIR="$SAGE_ROOT/templates/project-sage"
 
-for DIR in "${DIRECTORIES[@]}"; do
-    if [[ -d "$DIR" ]]; then
-        log_info "Already exists: ${DIR#$PROJECT_ROOT/}"
+if [[ ! -d "$TEMPLATE_DIR" ]]; then
+    log_error "Template not found: $TEMPLATE_DIR"
+    log_error "SAGE installation may be corrupted"
+    exit 1
+fi
+
+if [[ -d "$PROJECT_SAGE_DIR" ]] && [[ "$FORCE" == "false" ]]; then
+    log_info "Already exists: project-sage/"
+    log_info "Use --force to overwrite template files"
+else
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log_info "Would copy template from: sage/templates/project-sage/"
+        log_info "Would create: project-sage/"
+        log_info "Would create: project-sage/agents/"
+        log_info "Would create: project-sage/workflows/"
+        log_info "Would create: project-sage/knowledge/"
+        log_info "Would create: project-sage/README.md"
     else
-        if [[ "$DRY_RUN" == "true" ]]; then
-            log_info "Would create: ${DIR#$PROJECT_ROOT/}"
-        else
-            mkdir -p "$DIR"
-            log_success "Created: ${DIR#$PROJECT_ROOT/}"
-        fi
+        # Copy entire template directory
+        cp -r "$TEMPLATE_DIR" "$PROJECT_SAGE_DIR"
+        # Remove .gitkeep files (they're just for git tracking in template)
+        find "$PROJECT_SAGE_DIR" -name ".gitkeep" -delete 2>/dev/null || true
+        log_success "Installed project-sage/ from template"
     fi
-done
+fi
 
 # Step 2: Create project-specific config.yaml
 log_step "Step 2: Creating project configuration"
@@ -299,6 +307,8 @@ EOF
         echo "───────────────────────────────────────────────────────────────────"
         echo ""
     else
+        # Ensure directory exists (in case template copy was skipped)
+        mkdir -p "$PROJECT_SAGE_DIR"
         cat > "$CONFIG_FILE" <<EOF
 # Project SAGE Configuration
 # This file contains project-specific settings that extend sage/core/config.yaml
@@ -324,54 +334,8 @@ EOF
     fi
 fi
 
-# Step 3: Create README in project-sage
-log_step "Step 3: Creating project-sage README"
-
-README_FILE="$PROJECT_SAGE_DIR/README.md"
-
-if [[ ! -f "$README_FILE" ]]; then
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log_info "Would create: ${README_FILE#$PROJECT_ROOT/}"
-    else
-        cat > "$README_FILE" <<EOF
-# Project-Specific SAGE Extensions
-
-This directory contains project-specific extensions to the core SAGE framework.
-
-## Structure
-
-- \`agents/\` - Custom agents specific to this project
-- \`workflows/\` - Custom workflows specific to this project  
-- \`knowledge/\` - Project-specific TEA knowledge base entries
-- \`config.yaml\` - Project configuration (overrides sage/core/config.yaml)
-
-## Usage
-
-Core SAGE agents automatically discover and load extensions from this directory.
-
-### Adding Custom Agents
-
-Create agent files in \`agents/\` following the same format as core agents in \`sage/agents/\`.
-
-### Adding Custom Workflows
-
-Create workflow files in \`workflows/\` following the SAGE workflow format.
-
-## Important
-
-- Do NOT modify core SAGE files in \`sage/\` directory
-- Use this directory for project-specific additions only
-- Changes to SAGE behavior should go upstream to sage-framework repo
-
-EOF
-        log_success "Created: ${README_FILE#$PROJECT_ROOT/}"
-    fi
-else
-    log_info "Already exists: ${README_FILE#$PROJECT_ROOT/}"
-fi
-
-# Step 4: Sync wrapper agents to AI platforms
-log_step "Step 4: Syncing wrapper agents to AI platforms"
+# Step 3: Sync wrapper agents to AI platforms
+log_step "Step 3: Syncing wrapper agents to AI platforms"
 
 # Sync GitHub Copilot agents
 if [[ "$INSTALL_GITHUB" == "true" ]]; then
@@ -409,8 +373,8 @@ else
     log_info "Skipping Claude Code agents (not selected)"
 fi
 
-# Step 5: Create output directory
-log_step "Step 5: Creating output directories"
+# Step 4: Create output directory
+log_step "Step 4: Creating output directories"
 
 OUTPUT_DIR="$PROJECT_ROOT/$OUTPUT_FOLDER"
 if [[ ! -d "$OUTPUT_DIR" ]]; then
@@ -424,9 +388,9 @@ else
     log_info "Already exists: $OUTPUT_FOLDER/"
 fi
 
-# Step 6: Git hooks (optional)
+# Step 5: Git hooks (optional)
 if [[ "$SETUP_GIT_HOOKS" == "true" ]]; then
-    log_step "Step 6: Setting up git hooks"
+    log_step "Step 5: Setting up git hooks"
     
     GIT_DIR="$PROJECT_ROOT/.git"
     if [[ ! -d "$GIT_DIR" ]]; then
@@ -459,7 +423,7 @@ EOF
         fi
     fi
 else
-    log_step "Step 6: Skipping git hooks setup"
+    log_step "Step 5: Skipping git hooks setup"
 fi
 
 # Summary

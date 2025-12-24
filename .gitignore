@@ -1,8 +1,8 @@
 # SAGE state (user-specific)
 .sage/state/
 
-# Project config (user creates from example)
-project-sage/config.yaml
+# Project-specific folder (installed from template by setup.sh)
+/project-sage/
 
 # IDE integrations (generated)
 .claude/
