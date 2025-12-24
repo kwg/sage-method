@@ -1,29 +1,29 @@
-id,name,title,icon,role,module,file_path
-core/assistant,Assistant,Lifecycle Orchestrator,🎯,Lifecycle Orchestrator + Subagent Spawner,core,agents/core/assistant.md
-core/sage-master,SAGE Master,SAGE Master Executor, Knowledge Custodian, and Workflow Orchestrator,🧙,Master Task Executor + SAGE Expert + Guiding Facilitator Orchestrator,core,agents/core/sage-master.md
-bmb/sage-builder,SAGE Builder,SAGE Builder,🧙,Generalist Builder and SAGE System Maintainer,agentbuilder,agents/agentbuilder/sage-builder.md
-sage-native/devops,Nick,DevOps Agent,🔧,DevOps Engineer,core,agents/core/devops.md
-sage-native/it,Sarah,IT Support Agent,🖥️,IT Support Specialist,core,agents/core/it.md
-game-architect.agent.yaml,Cloud Dragonborn,Game Architect,🏛️,Principal Game Systems Architect + Technical Director,game,agents/game/game-architect.md
-qa-tester.agent.yaml,Debug McTestface,QA Tester,🧪,Senior QA Engineer + Automated Testing Specialist,game,agents/game/qa-tester.md
-game-qa-architect.agent.yaml,GLaDOS,Game QA Architect,🧪,Game QA Architect + Test Automation Specialist,game,agents/game/game-qa-architect.md
-game-solo-dev.agent.yaml,Indie,Game Solo Dev,🎮,Elite Indie Game Developer + Quick Flow Specialist,game,agents/game/game-solo-dev.md
-game-dev.agent.yaml,Link Freeman,Game Developer,🕹️,Senior Game Developer + Technical Implementation Specialist,game,agents/game/game-dev.md
-game-scrum-master.agent.yaml,Max,Game Dev Scrum Master,🎯,Game Development Scrum Master + Sprint Orchestrator,game,agents/game/game-scrum-master.md
-game-uiux.agent.yaml,Pixel,Game UI/UX Designer,🎨,Game UI/UX Designer + Visual Design Specialist,game,agents/game/game-uiux.md
-game-designer.agent.yaml,Samus Shepard,Game Designer,🎲,Lead Game Designer + Creative Vision Architect,game,agents/game/game-designer.md
-cis/presentation-master,Caravaggio,Visual Communication + Presentation Expert,🎨,Visual Communication Expert + Presentation Designer + Educator,research,agents/research/presentation-master.md
-cis/brainstorming-coach,Carson,Elite Brainstorming Specialist,🧠,Master Brainstorming Facilitator + Innovation Catalyst,research,agents/research/brainstorming-coach.md
-cis/creative-problem-solver,Dr. Quinn,Master Problem Solver,🔬,Systematic Problem-Solving Expert + Solutions Architect,research,agents/research/creative-problem-solver.md
-cis/design-thinking-coach,Maya,Design Thinking Maestro,🎨,Human-Centered Design Expert + Empathy Architect,research,agents/research/design-thinking-coach.md
-cis/storyteller,Sophia,Master Storyteller,📖,Expert Storytelling Guide + Narrative Strategist,research,agents/research/storyteller.md
-cis/innovation-strategist,Victor,Disruptive Innovation Oracle,⚡,Business Model Innovator + Strategic Disruption Expert,research,agents/research/innovation-strategist.md
-dev.agent.yaml,Amelia,Developer Agent,💻,Full-Stack Developer + TDD Practitioner,software,agents/software/dev.md
-quick-flow-solo-dev.agent.yaml,Barry,Quick Flow Solo Dev,🚀,Elite Full-Stack Developer + Quick Flow Specialist,software,agents/software/quick-flow-solo-dev.md
-sm.agent.yaml,Bob,Scrum Master,🏃,Technical Scrum Master + Story Preparation Specialist,software,agents/software/sm.md
-pm.agent.yaml,John,Product Manager,📋,Investigative Product Strategist + Market-Savvy PM,software,agents/software/pm.md
-analyst.agent.yaml,Mary,Business Analyst,📊,Strategic Business Analyst + Requirements Expert,software,agents/software/analyst.md
-tea.agent.yaml,Murat,Master Test Architect,🧪,Master Test Architect,software,agents/software/tea.md
-tech-writer.agent.yaml,Paige,Technical Writer,📚,Technical Documentation Specialist + Knowledge Curator,software,agents/software/tech-writer.md
-ux-designer.agent.yaml,Sally,UX Designer,🎨,User Experience Designer + UI Specialist,software,agents/software/ux-designer.md
-architect.agent.yaml,Winston,Architect,🏗️,System Architect + Technical Design Leader,software,agents/software/architect.md
+id,name,title,icon,role,module,visibility,file_path
+core/assistant,Assistant,Lifecycle Orchestrator,🎯,Lifecycle Orchestrator + Subagent Spawner,core,hidden,agents/core/assistant.md
+core/sage-master,SAGE Master,SAGE Master Executor,🧙,Master Task Executor + SAGE Expert + Guiding Facilitator Orchestrator,core,hidden,agents/core/sage-master.md
+bmb/sage-builder,SAGE Builder,SAGE Builder,🧙,Generalist Builder and SAGE System Maintainer,agentbuilder,public,agents/agentbuilder/sage-builder.md
+sage-native/devops,Nick,DevOps Agent,🔧,DevOps Engineer,core,universal,agents/core/devops.md
+sage-native/it,Sarah,IT Support Agent,🖥️,IT Support Specialist,core,universal,agents/core/it.md
+game-architect.agent.yaml,Cloud Dragonborn,Game Architect,🏛️,Principal Game Systems Architect + Technical Director,game,public,agents/game/game-architect.md
+qa-tester.agent.yaml,Debug McTestface,QA Tester,🧪,Senior QA Engineer + Automated Testing Specialist,game,public,agents/game/qa-tester.md
+game-qa-architect.agent.yaml,GLaDOS,Game QA Architect,🧪,Game QA Architect + Test Automation Specialist,game,public,agents/game/game-qa-architect.md
+game-solo-dev.agent.yaml,Indie,Game Solo Dev,🎮,Elite Indie Game Developer + Quick Flow Specialist,game,public,agents/game/game-solo-dev.md
+game-dev.agent.yaml,Link Freeman,Game Developer,🕹️,Senior Game Developer + Technical Implementation Specialist,game,public,agents/game/game-dev.md
+game-scrum-master.agent.yaml,Max,Game Dev Scrum Master,🎯,Game Development Scrum Master + Sprint Orchestrator,game,public,agents/game/game-scrum-master.md
+game-uiux.agent.yaml,Pixel,Game UI/UX Designer,🎨,Game UI/UX Designer + Visual Design Specialist,game,public,agents/game/game-uiux.md
+game-designer.agent.yaml,Samus Shepard,Game Designer,🎲,Lead Game Designer + Creative Vision Architect,game,public,agents/game/game-designer.md
+cis/presentation-master,Caravaggio,Visual Communication + Presentation Expert,🎨,Visual Communication Expert + Presentation Designer + Educator,research,public,agents/research/presentation-master.md
+cis/brainstorming-coach,Carson,Elite Brainstorming Specialist,🧠,Master Brainstorming Facilitator + Innovation Catalyst,research,public,agents/research/brainstorming-coach.md
+cis/creative-problem-solver,Dr. Quinn,Master Problem Solver,🔬,Systematic Problem-Solving Expert + Solutions Architect,research,public,agents/research/creative-problem-solver.md
+cis/design-thinking-coach,Maya,Design Thinking Maestro,🎨,Human-Centered Design Expert + Empathy Architect,research,public,agents/research/design-thinking-coach.md
+cis/storyteller,Sophia,Master Storyteller,📖,Expert Storytelling Guide + Narrative Strategist,research,public,agents/research/storyteller.md
+cis/innovation-strategist,Victor,Disruptive Innovation Oracle,⚡,Business Model Innovator + Strategic Disruption Expert,research,public,agents/research/innovation-strategist.md
+dev.agent.yaml,Amelia,Developer Agent,💻,Full-Stack Developer + TDD Practitioner,software,public,agents/software/dev.md
+quick-flow-solo-dev.agent.yaml,Barry,Quick Flow Solo Dev,🚀,Elite Full-Stack Developer + Quick Flow Specialist,software,public,agents/software/quick-flow-solo-dev.md
+sm.agent.yaml,Bob,Scrum Master,🏃,Technical Scrum Master + Story Preparation Specialist,software,public,agents/software/sm.md
+pm.agent.yaml,John,Product Manager,📋,Investigative Product Strategist + Market-Savvy PM,software,public,agents/software/pm.md
+analyst.agent.yaml,Mary,Business Analyst,📊,Strategic Business Analyst + Requirements Expert,software,public,agents/software/analyst.md
+tea.agent.yaml,Murat,Master Test Architect,🧪,Master Test Architect,software,public,agents/software/tea.md
+tech-writer.agent.yaml,Paige,Technical Writer,📚,Technical Documentation Specialist + Knowledge Curator,software,public,agents/software/tech-writer.md
+ux-designer.agent.yaml,Sally,UX Designer,🎨,User Experience Designer + UI Specialist,software,public,agents/software/ux-designer.md
+architect.agent.yaml,Winston,Architect,🏗️,System Architect + Technical Design Leader,software,public,agents/software/architect.md

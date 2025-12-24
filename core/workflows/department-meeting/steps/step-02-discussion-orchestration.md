@@ -12,7 +12,7 @@
 
 - 🎯 Analyze user input for intelligent agent selection before responding
 - ⚠️ Present [E] exit option after each agent response round
-- 💾 Continue conversation until user selects E (Exit)
+- 💾 Continue conversation until user selects E (Exit) or uses exit trigger
 - 📖 Maintain conversation state and context throughout session
 - 🚫 FORBIDDEN to exit until E is selected or exit trigger detected
 
@@ -20,8 +20,8 @@
 
 - Complete agent roster with merged personalities is available
 - User topic and conversation history guide agent selection
-- Party mode is active with TTS integration enabled
-- Exit triggers: `*exit`, `goodbye`, `end party`, `quit`
+- Meeting is active with TTS integration enabled
+- Exit triggers: `*exit`, `adjourn`, `end meeting`, `quit`
 
 ## YOUR TASK:
 
@@ -34,7 +34,7 @@ Orchestrate dynamic multi-agent conversations with intelligent agent selection, 
 For each user message or topic:
 
 **Input Analysis Process:**
-"Analyzing your message for the perfect agent collaboration..."
+"Analyzing your topic for the best expertise match..."
 
 **Analysis Criteria:**
 
@@ -42,6 +42,7 @@ For each user message or topic:
 - Complexity level and depth needed
 - Conversation context and previous agent contributions
 - User's specific agent mentions or requests
+- Whether DevOps or IT support expertise is needed
 
 ### 2. Intelligent Agent Selection
 
@@ -58,6 +59,7 @@ Select 2-3 most relevant agents based on analysis:
 - If user names specific agent → Prioritize that agent + 1-2 complementary agents
 - Rotate agent participation over time to ensure inclusive discussion
 - Balance expertise domains for comprehensive perspectives
+- Include universal support (Nick/Sarah) when topic requires DevOps/IT expertise
 
 ### 3. In-Character Response Generation
 
@@ -93,7 +95,7 @@ Enable dynamic agent-to-agent interactions:
 - Allow natural conversational progression
 - Enable agents to ask each other questions
 - Maintain professional yet engaging discourse
-- Include personality-driven humor and quirks when appropriate
+- Include personality-driven insights when appropriate
 
 ### 5. Question Handling Protocol
 
@@ -104,7 +106,7 @@ When an agent asks the user a specific question:
 
 - End that response round immediately after the question
 - Clearly highlight: **[Agent Name] asks: [Their question]**
-- Display: _[Awaiting user response...]_
+- Display: _[Awaiting your response...]_
 - WAIT for user input before continuing
 
 **Rhetorical Questions:**
@@ -125,9 +127,9 @@ After generating all agent responses for the round:
 [Agent 3 Response with TTS, building on or offering new perspective]
 
 **Continue Option:**
-"[Agents have contributed their perspectives. Ready for more discussion?]
+"[Discussion continues. What else would you like to explore?]
 
-[E] Exit Party Mode - End the collaborative session"
+[E] Adjourn - End the meeting"
 
 ### 7. Exit Condition Checking
 
@@ -135,21 +137,21 @@ Check for exit conditions before continuing:
 
 **Automatic Triggers:**
 
-- User message contains: `*exit`, `goodbye`, `end party`, `quit`
-- Immediate agent farewells and workflow termination
+- User message contains: `*exit`, `adjourn`, `end meeting`, `quit`
+- Immediate transition to meeting conclusion
 
 **Natural Conclusion:**
 
 - Conversation seems naturally concluding
-- Ask user: "Would you like to continue the discussion or end party mode?"
+- Ask user: "Would you like to continue the discussion or adjourn the meeting?"
 - Respect user choice to continue or exit
 
 ### 8. Handle Exit Selection
 
-#### If 'E' (Exit Party Mode):
+#### If 'E' (Adjourn Meeting):
 
 - Update frontmatter: `stepsCompleted: [1, 2]`
-- Set `party_active: false`
+- Set `meeting_active: false`
 - Load: `./step-03-graceful-exit.md`
 
 ## SUCCESS METRICS:
@@ -177,14 +179,14 @@ Check for exit conditions before continuing:
 - Maintain conversation memory and context across rounds
 - Rotate agent participation for inclusive discussions
 - Handle topic drift while maintaining productivity
-- Balance fun and professional collaboration
+- Balance depth and professional collaboration
 - Enable learning and knowledge sharing between agents
 
 ## MODERATION GUIDELINES:
 
 **Quality Control:**
 
-- If discussion becomes circular, have sage-master summarize and redirect
+- If discussion becomes circular, summarize and redirect
 - Ensure all agents stay true to their merged personalities
 - Handle disagreements constructively and professionally
 - Maintain respectful and inclusive conversation environment
@@ -198,6 +200,6 @@ Check for exit conditions before continuing:
 
 ## NEXT STEP:
 
-When user selects 'E' or exit conditions are met, load `./step-03-graceful-exit.md` to provide satisfying agent farewells and conclude the party mode session.
+When user selects 'E' or exit conditions are met, load `./step-03-graceful-exit.md` to provide professional agent closings and conclude the meeting.
 
 Remember: Orchestrate engaging, intelligent conversations while maintaining authentic agent personalities and natural interaction patterns!
