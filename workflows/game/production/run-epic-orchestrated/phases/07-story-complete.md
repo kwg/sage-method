@@ -26,26 +26,54 @@
 
   <execution>
 
-    <step n="1" name="update-story-file">
-      <action>Read story file</action>
-
-      <action>Update frontmatter:
-        - status: "review" (ready for human review)
+    <step n="1a" name="prepare-dev-record">
+      <action>Get agent model from state or environment:
+        agent_model = state.agent_model || ENV["CLAUDE_MODEL"] || "claude-sonnet-4-5-20250929"
+        <!-- Note: CLAUDE_MODEL is set by Claude Code CLI -->
       </action>
 
-      <action>Add or update Dev Agent Record section:
+      <action>Get current date:
+        current_date = Time.now.strftime("%Y-%m-%d")
+      </action>
+
+      <action>Get workflow version from state:
+        workflow_version = state.metrics.workflow_version || "3.1-phased"
+      </action>
+
+      <action>Calculate chunk statistics:
+        completed_count = completed_chunks.length
+        total_count = chunk_queue.length
+        failed_count = failed_chunks.length
+        skipped_count = total_count - completed_count - failed_count
+      </action>
+
+      <action>Format test results:
+        tests_passed_display = tests_passed ? "yes" : (tests_passed == false ? "no" : "skipped")
+        integration_display = integration_tests_passed ? "yes" : (integration_tests_passed == false ? "no" : "skipped")
+      </action>
+    </step>
+
+    <step n="1b" name="update-story-file">
+      <action>Read story file</action>
+
+      <action>Update frontmatter Status field to "done":
+        Replace "Status: ready-for-dev" with "Status: done"
+        OR Replace "Status: in-progress" with "Status: done"
+      </action>
+
+      <action>Add or update Dev Agent Record section with actual values (not placeholders):
 ```markdown
 ## Dev Agent Record
 
-- **Agent Model**: {{model_info}}
-- **Workflow Version**: 3.0-phased
+- **Agent Model**: {{agent_model}}
+- **Workflow Version**: {{workflow_version}}
 - **Completion Date**: {{current_date}}
-- **Chunks**: {{completed_chunks.length}}/{{chunk_queue.length}} completed
-  - Failed: {{failed_chunks.length}}
-  - Skipped (deps): {{chunks_skipped_dependency}}
+- **Chunks**: {{completed_count}}/{{total_count}} completed
+  - Failed: {{failed_count}}
+  - Skipped (deps): {{skipped_count}}
 - **Test Attempts**: {{test_attempt}}
-- **Tests Passed**: {{tests_passed | "yes" or "no" or "skipped"}}
-- **Integration Tests**: {{integration_tests_passed | "yes" or "no" or "skipped"}}
+- **Tests Passed**: {{tests_passed_display}}
+- **Integration Tests**: {{integration_display}}
 - **Review Iterations**: {{review_iteration}}
 - **Issues Remaining**: {{remaining_issues_summary}}
 - **Notes**: {{implementation_notes}}
@@ -53,6 +81,32 @@
       </action>
 
       <action>Write story file</action>
+    </step>
+
+    <step n="1c" name="verify-dev-record">
+      <action>Read story file after write to verify changes</action>
+
+      <check if="story file contains 'Not yet implemented' OR 'unknown' OR '{{model_info}}' in Dev Agent Record">
+        <warning>Dev Agent Record not properly written - contains placeholder values</warning>
+        <action>Log failed values for debugging</action>
+        <action>Retry write with explicit hardcoded fallbacks:
+          - agent_model = "claude-sonnet-4-5-20250929"
+          - current_date = system date
+          - workflow_version = "3.1-phased"
+        </action>
+      </check>
+
+      <check if="story file frontmatter Status field != 'done' AND != 'review'">
+        <warning>Story status not updated to done/review</warning>
+        <action>Retry frontmatter update:
+          Find first line matching "Status:" and replace with "Status: done"
+        </action>
+      </check>
+
+      <output>✅ Dev Agent Record verified:
+        - Agent Model: {{agent_model}}
+        - Status: {{status_field_value}}
+      </output>
     </step>
 
     <step n="2" name="update-sprint-status">

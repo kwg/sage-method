@@ -77,6 +77,11 @@ phases:
     file: "phases/08-finalize.md"
     description: "Generate metrics, push branch, create PR"
 
+  - id: "09-merge-to-dev"
+    file: "phases/09-merge-to-dev.md"
+    description: "Merge epic PR to dev branch (auto or manual)"
+    optional: true  # Skip if auto_merge: false and not resuming
+
 # Subagents used by phases (uses core subagent-spawner)
 subagents:
   planner:
@@ -114,6 +119,8 @@ git:
   epic_branch: "epic-{epic_id}"
   story_branch: "{story_id}"
   base: "dev"
+  auto_merge: false  # Set true to auto-merge PR after approval in Phase 09
+  delete_branch_after_merge: false  # Set true to delete epic branch after merge
 
 # Retry configuration (from core retry-handler)
 retry:
@@ -138,6 +145,16 @@ learning:
 
 # Version history
 changelog:
+  - version: "3.2"
+    date: "2025-12-24"
+    changes:
+      - "EPIC-7-RETRO: Added Phase 09 for auto-merge to dev"
+      - "EPIC-7-RETRO: Fixed Dev Agent Record population in Phase 07"
+      - "EPIC-7-RETRO: Added branch state verification in Phase 08"
+      - "EPIC-7-RETRO: Added story file Status field update"
+      - "EPIC-7-RETRO: Added agent_model to state schema"
+      - "Added auto_merge configuration option"
+
   - version: "3.1"
     date: "2025-12-19"
     changes:

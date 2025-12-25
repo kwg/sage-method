@@ -256,6 +256,110 @@ Bob (Scrum Master): "We'll get to all of it. But first, let me load the previous
 
 </step>
 
+<step n="2.5" goal="Load Epic State File and Extract Learning Records">
+
+<output>
+Bob (Scrum Master): "Before we look at the previous retro, let me check if we have an epic state file from the workflow execution."
+
+Charlie (Senior Dev): "You mean from the automated epic runner?"
+
+Bob (Scrum Master): "Exactly. If Epic {{epic_number}} was run through the orchestrated workflow, we'll have consolidated learning records and metrics."
+</output>
+
+<action>Attempt to load epic state file from: state/epic-{{epic_number}}-state.json OR .sage/state/epic-{{epic_number}}-state.json</action>
+
+<check if="state file found">
+  <action>Parse JSON state file</action>
+  <action>Extract learning_records array (if present)</action>
+  <action>Extract retro_notes object (if present)</action>
+  <action>Extract metrics object</action>
+
+  <output>
+Bob (Scrum Master): "Found it! Epic {{epic_number}} state file contains valuable data."
+
+**Epic State File Summary:**
+
+Workflow Version: {{state.metrics.workflow_version}}
+Execution Period: {{state.metrics.start_time}} to {{state.metrics.end_time}}
+Agent Model: {{state.agent_model}}
+
+**Learning Records:**
+{{#if state.learning_records.length > 0}}
+Total records: {{state.learning_records.length}}
+
+{{for record in state.learning_records}}
+- **{{record.story_id}}** ({{record.category}}): {{record.lesson}}
+  Context: {{record.context_summary}}
+  Resolution: {{record.resolution_summary}}
+{{endfor}}
+{{else}}
+No learning records captured during execution.
+{{/if}}
+
+**Retro Notes:**
+{{#if state.retro_notes}}
+{{for note in state.retro_notes}}
+### {{note.key}}
+Date: {{note.date}}
+Issues Found: {{note.issues_found.length}}
+Lessons: {{note.lessons_learned}}
+{{endfor}}
+{{else}}
+No additional retro notes in state file.
+{{/if}}
+
+**Workflow Metrics:**
+- Total Stories: {{state.metrics.summary.total_stories}}
+- Completed Stories: {{state.metrics.summary.completed_stories}}
+- Failed Stories: {{state.metrics.summary.failed_stories}}
+- Total Chunks: {{state.metrics.summary.total_chunks}}
+- Average Chunk Duration: {{state.metrics.summary.avg_chunk_duration_ms}}ms
+  </output>
+
+  <action>Integrate learning records into story analysis from Step 2</action>
+  <action>Cross-reference learning records with story file dev notes</action>
+  <action>Identify patterns across learning records</action>
+
+  <output>
+Dana (QA Engineer): "Those learning records are really detailed - {{interesting_pattern_from_records}}."
+
+Charlie (Senior Dev): "And I see we had {{failure_count}} test failures that got recorded with full context."
+
+Bob (Scrum Master): "This is exactly the kind of data we need for a thorough retrospective."
+  </output>
+
+  <action>Prepare learning records for discussion in Step 6</action>
+</check>
+
+<check if="state file not found">
+  <output>
+Bob (Scrum Master): "No epic state file found for Epic {{epic_number}}. This epic may have been run manually rather than through the orchestrated workflow."
+
+Charlie (Senior Dev): "That's fine - we still have the story files to work with."
+
+Bob (Scrum Master): "Right. Just means we'll rely more on the story file analysis from Step 2."
+  </output>
+
+  <action>Set {{state_file_found}} = false</action>
+  <action>Continue with story-based analysis only</action>
+</check>
+
+<check if="state file malformed">
+  <output>
+⚠️ **Warning**: Epic state file exists but couldn't be parsed.
+
+File location: {{state_file_path}}
+Error: {{parse_error}}
+
+Bob (Scrum Master): "We have a state file but it's corrupted. We'll continue with story file analysis."
+  </output>
+
+  <action>Log error for debugging</action>
+  <action>Continue without state file data</action>
+</check>
+
+</step>
+
 <step n="3" goal="Load and Integrate Previous Epic Retrospective">
 
 <action>Calculate previous epic number: {{prev_epic_num}} = {{epic_number}} - 1</action>

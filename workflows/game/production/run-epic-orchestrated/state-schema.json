@@ -17,9 +17,14 @@
         "06-review",
         "07-story-complete",
         "08-finalize",
+        "09-merge-to-dev",
         "done"
       ],
       "description": "Current phase of execution"
+    },
+    "agent_model": {
+      "type": "string",
+      "description": "Agent model identifier (e.g., 'claude-sonnet-4-5-20250929')"
     },
     "epic_id": {
       "type": "string",
