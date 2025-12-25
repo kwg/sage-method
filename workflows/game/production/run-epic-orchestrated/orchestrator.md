@@ -56,6 +56,7 @@
       "phase": "00-init",
       "epic_id": null,
       "epic_branch": null,
+      "agent_model": "{{ENV['ANTHROPIC_MODEL'] || ENV['CLAUDE_MODEL'] || 'claude-sonnet-4-5-20250929'}}",
       "story_queue": [],
       "current_story_index": 0,
       "completed_stories": [],

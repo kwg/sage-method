@@ -243,7 +243,89 @@ No bug reports found for Epic {{epic_num}}.
 
 </step>
 
-<step n="6" goal="Epic Completion Checklist">
+<step n="6" goal="Verify Branch Merge Status">
+
+<output>
+**Checking Branch Merge Status**
+
+Verifying that epic branch has been merged to dev/main.
+</output>
+
+<action>Determine epic branch name: epic-{{epic_num}}</action>
+<action>Check if epic branch exists:
+  git branch --list epic-{{epic_num}}
+</action>
+
+<check if="epic branch exists">
+  <action>Check if epic branch is merged to dev:
+    git log dev..epic-{{epic_num}} --oneline
+    unmerged_commits = output
+  </action>
+
+  <check if="unmerged_commits exist">
+    <output>
+⚠️ **WARNING: Epic Branch Not Merged**
+
+Epic branch: epic-{{epic_num}}
+Unmerged commits: {{unmerged_commits.length}}
+
+The epic branch has commits that are not in dev. This may indicate:
+1. PR was not merged after Phase 09
+2. PR was merged but branch not updated
+3. Work was done outside the workflow
+
+**Action Required:**
+- Review PR status for epic-{{epic_num}}
+- Verify branch merge status
+- Merge manually if needed
+
+{user_name}, has the epic-{{epic_num}} branch been merged to dev? (yes/no)
+    </output>
+    <action>WAIT for {user_name} response</action>
+
+    <check if="user says no">
+      <output>
+**BLOCKED**: Epic branch must be merged before completion.
+
+**Next Steps:**
+1. Check PR status: gh pr list --head epic-{{epic_num}}
+2. Merge PR if approved
+3. Or run Phase 09 to complete merge
+4. Return when branch is merged
+      </output>
+      <action>HALT</action>
+    </check>
+
+    <check if="user confirms merged">
+      <output>
+⚠️ User confirmed merge, but git shows unmerged commits.
+This may be a branch sync issue. Proceeding with caution.
+      </output>
+    </check>
+  </check>
+
+  <check if="no unmerged commits">
+    <output>
+✅ Epic branch merged to dev
+    </output>
+  </check>
+</check>
+
+<check if="epic branch does not exist">
+  <output>
+ℹ️  Epic branch epic-{{epic_num}} not found locally.
+This may indicate:
+1. Epic was developed without branch workflow
+2. Branch was deleted after merge
+3. Working in different repository
+
+Proceeding without branch verification.
+  </output>
+</check>
+
+</step>
+
+<step n="7" goal="Epic Completion Checklist">
 
 <output>
 **Epic {{epic_num}} Completion Checklist**
@@ -254,6 +336,7 @@ Please verify each item:
 - [{{integration_verified}}] Integration verified
 - [{{playtest_complete}}] Human playtest completed with sign-off
 - [{{no_blocking_bugs}}] No unresolved Severity A/B bugs
+- [{{branch_merged}}] Epic branch merged to dev
 
 {{#if all_checks_pass}}
 All requirements met! Ready to mark Epic {{epic_num}} as complete.
@@ -277,7 +360,7 @@ Return when ready to complete the epic.
 
 </step>
 
-<step n="7" goal="Mark Epic Complete">
+<step n="8" goal="Mark Epic Complete">
 
 <action>Load {sprint_status_file}</action>
 <action>Find epic key "epic-{{epic_num}}"</action>
@@ -302,7 +385,7 @@ Epic completion verified, but manual update may be needed.
 
 </step>
 
-<step n="8" goal="Recommend Next Steps">
+<step n="9" goal="Recommend Next Steps">
 
 <output>
 **Epic {{epic_num}} Complete, {user_name}!**

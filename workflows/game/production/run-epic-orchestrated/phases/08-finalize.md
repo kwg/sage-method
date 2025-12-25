@@ -22,6 +22,63 @@
 
   <execution>
 
+    <step n="0" name="verify-branch-state">
+      <action>Verify all story branches merged to epic branch:
+        pending_merges = []
+        for story in completed_stories:
+          story_branch = story_id (branch naming convention)
+          git log {{epic_branch}}..{{story_branch}} --oneline
+          if output not empty:
+            pending_merges.append({story: story, unmerged_count: line_count})
+      </action>
+
+      <check if="pending_merges not empty">
+        <warning>{{pending_merges.length}} story branches have unmerged commits</warning>
+        <output>
+⚠️ **Unmerged Story Branches Detected**
+
+The following story branches have commits not yet in {{epic_branch}}:
+
+{{for item in pending_merges}}
+- {{item.story}}: {{item.unmerged_count}} unmerged commits
+{{endfor}}
+
+This may indicate incomplete merges from Phase 07.
+Please verify these branches before continuing.
+
+Options:
+1. Continue anyway (commits may be duplicates or intentional)
+2. Abort and investigate
+        </output>
+        <action>Ask user: continue or abort?</action>
+      </check>
+
+      <action>Check epic branch vs dev branch:
+        git log dev..{{epic_branch}} --oneline
+        pending_commits = output
+      </action>
+
+      <output>
+📊 **Branch State Summary**
+
+Epic Branch: {{epic_branch}}
+Target Branch: dev
+Pending Commits: {{pending_commits.length}}
+
+{{if pending_commits.length == 0}}
+⚠️ WARNING: Epic branch has no new commits vs dev.
+This may indicate the epic was already merged or branch is out of date.
+{{else}}
+✅ Epic branch contains {{pending_commits.length}} commits ready for PR.
+{{endif}}
+      </output>
+
+      <check if="pending_commits.length == 0">
+        <warning>Epic branch has no commits ahead of dev</warning>
+        <action>Ask user: continue with empty PR or abort?</action>
+      </check>
+    </step>
+
     <step n="1" name="finalize-metrics">
       <action>Record end_time = current ISO timestamp</action>
 
@@ -115,7 +172,7 @@ Full metrics: `docs/sprint-artifacts/epic-{{epic_id}}-metrics.json`
           --body "{{pr_body}}"
       </action>
 
-      <action>Capture PR URL from gh output</action>
+      <action>Capture PR URL and PR number from gh output</action>
 
       <check if="PR creation fails">
         <warning>Failed to create PR automatically</warning>
@@ -123,6 +180,7 @@ Full metrics: `docs/sprint-artifacts/epic-{{epic_id}}-metrics.json`
           Base: dev
           Head: {{epic_branch}}
         </output>
+        <action>Set pr_url and pr_number to null in state</action>
       </check>
     </step>
 
@@ -173,11 +231,14 @@ Full metrics: `docs/sprint-artifacts/epic-{{epic_id}}-metrics.json`
 
   <return>
     {
-      "next_phase": "done",
+      "next_phase": {{#if auto_merge}}"09-merge-to-dev"{{else}}"done"{{/if}},
       "state_updates": {
-        "metrics": {{final_metrics}}
+        "metrics": {{final_metrics}},
+        "pr_url": "{{pr_url}}",
+        "pr_number": "{{pr_number}}"
       },
-      "output": "{{output_text}}"
+      "output": "{{output_text}}",
+      "note": {{#unless auto_merge}}"Phase 09 skipped (auto_merge: false). Merge PR manually when ready."{{/unless}}
     }
   </return>
 

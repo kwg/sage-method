@@ -1,10 +1,13 @@
-# Create Epic - Game Module Extension
-# Extends: sage/workflows/core/epic/create-epic/workflow.yaml
+# Create Epic - Core Workflow (Module-Agnostic)
+# Version: 2.0
+#
+# This is the core create-epic workflow that can be extended by game/ and software/ modules.
+# It provides shared logic for epic setup with retrospective learning integration.
+
 name: create-epic
-description: "Game-specific epic setup extending core workflow with Godot integration"
+description: "Orchestrate complete epic setup: review retros, analyze dependencies, create all stories with full context injection, generate story contexts, and produce epic kickoff summary"
 author: "SAGE Framework"
 version: "2.0"
-extends: "core/epic/create-epic"
 
 # Critical variables from config
 config_source: "{project-root}/sage/core/config.yaml"
@@ -15,13 +18,22 @@ date: system-generated
 sprint_artifacts: "{config_source}:sprint_artifacts"
 
 # Workflow components
-installed_path: "{project-root}/sage/workflows/game/production/create-epic"
+installed_path: "{project-root}/sage/workflows/core/epic/create-epic"
 instructions: "{installed_path}/instructions.md"
-briefing_template: "{installed_path}/epic-briefing-template.md"
+briefing_template: "{installed_path}/templates/briefing-template.md"
+# Note: story_template not needed - stories created via story creation workflow
 
-# Core workflow references (for subagent spawning)
-create_story_workflow: "{project-root}/sage/workflows/game/production/create-story/workflow.yaml"
-story_context_workflow: "{project-root}/sage/workflows/game/production/story-context/workflow.yaml"
+# Core components integration (EPIC-002)
+components:
+  - "sage/core/components/state-manager.md"
+  - "sage/core/components/metrics-collector.md"
+  - "sage/core/components/learning-recorder.md"
+
+# State management
+state:
+  schema: "state-schema.json"
+  location: ".sage/state/create-epic-{epic_id}-state.json"
+  persist: true
 
 # Input variables
 variables:
@@ -34,10 +46,9 @@ variables:
   # Retrospective sources (glob pattern for all retros)
   retrospectives_pattern: "{sprint_artifacts}/epic-*-retro-*.md"
 
-  # Epic definition sources (GAME-SPECIFIC: Use GDD)
+  # Epic definition sources (module-specific, can be overridden)
   epics_file: "{output_folder}/epics.md"
-  gdd_file: "{output_folder}/GDD.md"
-  epic_definitions: "{output_folder}/GDD.md"  # Override core default
+  epic_definitions: "{output_folder}/*epic*.md"
 
   # Architecture and tech context
   architecture_file: "{output_folder}/architecture.md"
@@ -49,6 +60,12 @@ variables:
 
 # Smart input file references
 input_file_patterns:
+  # EPIC-002: Read epic state files for learning_records and retro_notes
+  epic_state_files:
+    description: "Epic state files with learning records from previous epics"
+    pattern: ".sage/state/epic-*-state.json"
+    load_strategy: "FULL_LOAD"
+
   retrospectives:
     description: "All previous retrospectives for learning extraction"
     pattern: "{sprint_artifacts}/epic-*-retro-*.md"
@@ -64,14 +81,9 @@ input_file_patterns:
     whole: "{output_folder}/*architecture*.md"
     load_strategy: "FULL_LOAD"
 
-  gdd:
-    description: "Game design document with epic definitions"
-    whole: "{output_folder}/GDD.md"
-    load_strategy: "FULL_LOAD"
-
   epics:
     description: "Epic breakdown document"
-    whole: "{output_folder}/*epic*.md"
+    whole: "{epic_definitions}"
     load_strategy: "SELECTIVE_LOAD"
 
 # Workflow outputs
@@ -84,11 +96,12 @@ outputs:
 phases:
   phase_1:
     name: "Retrospective Review & Epic Validation"
-    description: "Load all retros, extract learnings, validate epic stories against patterns"
+    description: "Load all retros + state files, extract learnings, validate epic stories against patterns"
     outputs:
       - epic_briefing_document
       - applicable_patterns_list
       - action_items_to_address
+      - learning_records_extracted
 
   phase_2:
     name: "Dependency Analysis"
@@ -137,6 +150,7 @@ subagent_config:
 context_injection:
   epic_briefing:
     - retro_learnings
+    - state_file_learnings  # NEW: learning_records from state files
     - applicable_patterns
     - technical_context
     - story_dependencies
@@ -146,23 +160,13 @@ context_injection:
     - architecture_excerpts
     - predecessor_learnings
 
-# Game-Specific Extensions (override core extension points)
-module_extensions:
-  epic_definition_source: "GDD.md"
-  story_workflow: "game/production/create-story/workflow.yaml"
-  context_workflow: "game/production/story-context/workflow.yaml"
-  pattern_matching:
-    # Game-specific pattern matching
-    godot_patterns:
-      - "signal", "async", "await" → "P4 (Async Null Guards), P5 (Connection Validation)"
-      - "state", "save", "load" → "P6 (Deferred Callbacks)"
-      - "UI", "scene", "node" → "Godot scene patterns"
-      - "resource", "data", "tres" → "Resource loading patterns"
-  validation_hooks:
-    post_story_creation:
-      - "Validate Godot scene references in story"
-      - "Check for class_name conflicts"
-      - "Verify resource paths follow conventions"
+# Extension points for modules
+extension_points:
+  # Modules can override these to customize behavior
+  epic_definition_source: "Override to specify module-specific epic source (e.g., GDD.md for game)"
+  story_workflow: "Override to specify module-specific create-story workflow"
+  context_workflow: "Override to specify module-specific story-context workflow"
+  pattern_matching: "Override to add module-specific pattern matching logic"
 
 standalone: true
 web_bundle: false
@@ -172,13 +176,17 @@ changelog:
   - version: "2.0"
     date: "2024-12-24"
     changes:
-      - "STORY-2-2: Extended from core/epic/create-epic"
-      - "Game-specific: GDD as epic definition source"
-      - "Game-specific: Godot scene validation hooks"
-      - "Game-specific: Pattern matching for Godot patterns"
-      - "Inherits: State file reading, EPIC-002 components from core"
+      - "EPIC-002: Core components integration (state-manager, metrics-collector, learning-recorder)"
+      - "STORY-2-2: State file reading for learning_records and retro_notes"
+      - "STORY-2-2: Unified core workflow with module extension points"
+      - "STORY-2-2: Assistant agent integration support"
+      - "Module-agnostic: Extracted shared logic from game/create-epic"
+      - "Extension points defined for game/ and software/ modules"
 
   - version: "1.0"
     date: "2024-11-XX"
     changes:
-      - "Initial release (standalone, pre-core extraction)"
+      - "Initial release (game-specific only)"
+      - "Retrospective review and pattern injection"
+      - "Dependency analysis and batching"
+      - "Subagent-based story creation"

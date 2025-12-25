@@ -1,0 +1,38 @@
+name: "merge-to-main"
+description: "Merge dev branch to main with verification and optional release tagging"
+author: "SAGE"
+version: "1.0"
+
+config_source: "{project-root}/sage/core/config.yaml"
+
+installed_path: "{project-root}/sage/workflows/game/production/merge-to-main"
+instructions: "{installed_path}/instructions.md"
+
+# Configuration options
+options:
+  run_tests: true          # Run test suite before merge
+  create_tag: false        # Create release tag after merge
+  tag_format: "v{version}" # Tag format (uses project version)
+  require_clean_dev: true  # Require dev to be up-to-date with origin
+  source_branch: "dev"     # Branch to merge from
+  target_branch: "main"    # Branch to merge to
+
+standalone: true
+web_bundle: false
+
+metadata:
+  category: "production"
+  subcategory: "git"
+  tags:
+    - "merge"
+    - "release"
+    - "deployment"
+
+changelog:
+  - version: "1.0"
+    date: "2025-12-24"
+    changes:
+      - "EPIC-7-RETRO: Initial merge-to-main workflow"
+      - "Support for automated merge with verification"
+      - "Optional test suite execution"
+      - "Optional release tagging"
