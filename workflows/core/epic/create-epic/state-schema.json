@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Create Epic State Schema",
+  "description": "State tracking for create-epic workflow execution",
+  "type": "object",
+  "properties": {
+    "workflow_name": {
+      "type": "string",
+      "const": "create-epic"
+    },
+    "workflow_version": {
+      "type": "string"
+    },
+    "epic_id": {
+      "type": "string",
+      "description": "Epic identifier (e.g., 'epic-8', 'mini-sprint-uiux')"
+    },
+    "epic_title": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": ["init", "retro_review", "dependency_analysis", "story_creation", "context_generation", "verification", "kickoff", "complete"]
+    },
+    "stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "story_key": {"type": "string"},
+          "story_title": {"type": "string"},
+          "batch": {"type": "integer"},
+          "status": {
+            "type": "string",
+            "enum": ["pending", "creating", "created", "context_generating", "ready", "failed"]
+          },
+          "patterns_applied": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "error": {"type": "string"}
+        },
+        "required": ["story_key", "status"]
+      }
+    },
+    "batches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "batch_num": {"type": "integer"},
+          "parallel": {"type": "boolean"},
+          "stories": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "rationale": {"type": "string"}
+        }
+      }
+    },
+    "learning_records": {
+      "type": "array",
+      "description": "Learning records extracted during workflow execution",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source of learning (retro file or state file)"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["pattern", "action_item", "technical_debt", "process_improvement"]
+          },
+          "description": {"type": "string"},
+          "applied_to_stories": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "retro_notes": {
+      "type": "object",
+      "description": "Aggregated notes from retrospectives and state files",
+      "properties": {
+        "retrospectives_reviewed": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "state_files_reviewed": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "unresolved_action_items": {
+          "type": "array",
+          "items": {"type": "object"}
+        },
+        "applicable_patterns": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "technical_debt": {
+          "type": "array",
+          "items": {"type": "object"}
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "total_stories": {"type": "integer"},
+        "stories_created": {"type": "integer"},
+        "stories_failed": {"type": "integer"},
+        "contexts_generated": {"type": "integer"},
+        "patterns_injected": {"type": "integer"},
+        "retros_reviewed": {"type": "integer"},
+        "state_files_reviewed": {"type": "integer"},
+        "learning_records_extracted": {"type": "integer"}
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "epic_briefing": {"type": "string"},
+        "dependency_analysis": {"type": "string"},
+        "kickoff_summary": {"type": "string"},
+        "story_files": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "context_files": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  },
+  "required": ["workflow_name", "epic_id", "current_phase"]
+}

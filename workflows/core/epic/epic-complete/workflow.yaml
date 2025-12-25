@@ -1,0 +1,86 @@
+# Epic Complete - Core Workflow
+# Version: 1.0
+#
+# This workflow runs after an epic is complete to:
+# - Validate epic state file exists
+# - Generate final metrics and retrospective
+# - Check project structure alignment with SAGE patterns
+# - Prompt for brownfield conversion if needed
+
+name: epic-complete
+description: "Epic completion workflow with structure validation and conversion prompt"
+author: "SAGE Framework"
+version: "1.0"
+
+# Critical variables from config
+config_source: "{project-root}/sage/core/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+date: system-generated
+sprint_artifacts: "{config_source}:sprint_artifacts"
+
+# Workflow components
+installed_path: "{project-root}/sage/workflows/core/epic/epic-complete"
+instructions: "{installed_path}/instructions.md"
+
+# Input variables
+variables:
+  # Target epic (required)
+  epic_id: "" # e.g., "epic-8"
+
+  # Sprint tracking
+  sprint_status_file: "{sprint_artifacts}/sprint-status.yaml"
+
+  # Epic state file
+  epic_state_file: ".sage/state/{{epic_id}}-state.json"
+
+  # Retrospective output
+  retro_output: "{sprint_artifacts}/{{epic_id}}-retro.md"
+
+# Workflow outputs
+outputs:
+  retrospective: "{retro_output}"
+  metrics_summary: "{sprint_artifacts}/{{epic_id}}-metrics-summary.md"
+  conversion_report: "{sprint_artifacts}/{{epic_id}}-structure-report.md"
+
+# Workflow phases
+phases:
+  phase_1:
+    name: "Validate Epic State"
+    description: "Check that epic state file exists with learning_records"
+    outputs:
+      - state_validation_result
+
+  phase_2:
+    name: "Generate Final Metrics"
+    description: "Aggregate metrics from epic execution"
+    outputs:
+      - metrics_summary
+
+  phase_3:
+    name: "Structure Alignment Check"
+    description: "Compare project structure with SAGE patterns"
+    outputs:
+      - alignment_report
+      - conversion_recommendations
+
+  phase_4:
+    name: "Brownfield Conversion Prompt"
+    description: "Prompt user to upgrade structure if needed"
+    outputs:
+      - conversion_decision
+      - upgrade_plan
+
+standalone: true
+web_bundle: false
+
+# Version history
+changelog:
+  - version: "1.0"
+    date: "2024-12-24"
+    changes:
+      - "STORY-2-2: Initial release"
+      - "State file validation"
+      - "Brownfield conversion prompt (AC6)"
+      - "Structure alignment checking"
